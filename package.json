@@ -1,0 +1,61 @@
+{
+  "name": "qweb-js",
+  "version": "1.5.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --require @babel/register --recursive --require mock-local-storage",
+    "coverage": "nyc npm test",
+    "update-version": "node update-version.js",
+    "dev": "react-scripts start",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "cy:run": "cypress run --spec 'cypress/integration/*'",
+    "start-test-server": "npm start & wait-on http://localhost:3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.5.1",
+    "@material-ui/lab": "^4.0.0-alpha.52",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "ace-builds": "^1.4.11",
+    "file-saver": "^2.0.2",
+    "nearley": "git+https://gitlab.com/qweb-project/nearley-qweb.git",
+    "notistack": "^0.9.16",
+    "react": "^16.12.0",
+    "react-ace": "^9.0.0",
+    "react-device-detect": "^1.14.0",
+    "react-dom": "^16.12.0",
+    "react-scripts": "^4.0.0",
+    "wait-on": "^5.0.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.7.7",
+    "@babel/register": "^7.7.7",
+    "cypress": "^4.12.1",
+    "eslint-plugin-cypress": "^2.11.1",
+    "mocha": "^7.2.0",
+    "mock-local-storage": "^1.1.15",
+    "nyc": "^15.0.0"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[none]{hyphenat}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+
+\title{Propuesta de Trabajo de Inserción Profesional}
+\subtitle{QSim web: simulador web para la arquitectura Q}
+\author{Francisco Pérez Ramos y Pablo Pissi \\ Director: Lic. Federico Martínez}
+\date{}
+\renewcommand{\figurename}{Figura.}
+\begin{document}
+\maketitle
+  
+\section*{Justificación e Importancia del Tema}
+La arquitectura Q es una arquitectura de computadoras didáctica desarrollada en la Universidad Nacional de Quilmes en el contexto de la asignatura Organización de Computadoras. Cuenta con una CPU, memoria, registros y un lenguaje homónimo para operar con dichas partes.
+Está diseñada en 5 etapas, yendo desde Q1 que sólo contiene instrucciones aritméticas y registros, hasta Q5 que permite acceder a memoria, escribir condicionales, ciclos y rutinas. Cada una de estas etapas es un superconjunto de la etapa anterior, siendo Q1 la etapa inicial. Es decir, los programas escritos en Q1 son funcionales en Q2 y esta compatibilidad se mantiene en todos los niveles.
+
+Esto permite que desde el punto de vista pedagógico, las/los estudiantes puedan ir incorporando el lenguaje de manera incremental y a medida que los problemas son planteados teóricamente.
+
+Cuando un/a estudiante ingresa a la universidad, se encuentra con complicaciones relacionadas con los métodos de estudio, las diferencias en los niveles educativos con la secundaria, las nuevas responsabilidades, entre otras. El recorrido conceptual de Organización de Computadoras tiene la complejidad adicional de ejercitar varios niveles de abstracción. Por lo nombrado anteriormente es deseable que esta materia cuente con una herramienta que permita visualizar los efectos producidos por un programa Q.
+
+En este sentido, QSim (una herramienta desarrollada previamente por otro Trabajo de Inserción Profesional) realiza un aporte fundacional para la idea de este trabajo: Es un simulador de la arquitectura Q, que permite la ejecución de programas, la utilización de rutinas, saltos, modos de direccionamiento y provee una respuesta al usuario acorde a lo esperado en la materia.
+
+Qsim presenta sin embargo algunos problemas que dificultan su adopción, por ejemplo las siguientes:
+
+\begin{itemize}
+
+\item Instalación no trivial. 
+
+\item Se encuentra atado a una versión de Java. 
+
+\item Alto consumo de memoria. 
+\end{itemize}
+
+Estas desventajas pueden parecer menores para una persona con experiencia. El problema radica en que los/las usuarios/as de QSim son estudiantes del primer año de la Tecnicatura en Programación. Las complejidades accidentales que plantea la herramienta nos parecen muy importantes en este contexto y es por ello que queremos desarrollar una herramienta que permita reducirlas al mínimo. En el contexto actual donde las clases se dictan de manera remota debido al aislamiento social, que los/las estudiantes puedan utilizar el simulador sin la necesidad de recurrir a las computadoras de la universidad es una ventaja muy grande para ellos.
+
+\section*{Objetivo General}
+El objetivo de este trabajo es brindar una implementación del lenguaje Q realizada sobre javascript, que permite la ejecución en navegadores sin depedencias externas, con una interfaz web.
+
+\section*{Objetivos Específicos}
+Específicamente se busca que la herramienta tenga las siguientes funcionalidades: 
+
+\begin{itemize}
+\item Implementación del lenguaje completo (Q1, Q2, Q3, Q4, Q5). 
+\item Ejecución total, por instrucción y por instrucción detallada. 
+\item Posibilidad de crear un subconjunto de Q distinto a los nombrados en el primer punto (determinadas instrucciones, determinados modos de direccionamiento). 
+\item Posibilidad de configurar valores por defecto en registros o direcciones de memoria. 
+\item Creación de una librería QLib que contenga la Implementación de Q como lenguaje y de todas las funcionalidades relacionadas con la ejecución, manejo de estado. Esto permite la creación de nuevas interfaces de usuario, la traducción del lenguaje Q, la creación de herramientas de escritorio.
+\item Exportar e importar programas Q a archivos.
+
+\end{itemize}
+
+\section*{Plan de trabajo}
+
+\begin{enumerate}
+\item Diseño: En esta etapa plantearemos la bases de la arquitectura de nuestra solución y el diseño de la misma. Se analizarán las tecnologías disponibles para la resolución del trabajo, evaluando sus ventajas y desventajas.
+\item Implementación: Escribiremos el código para la herramienta. Realizaremos esta etapa siguiendo buenas practicas de la industria del desarrollo del software, tales como testing, diseño incremental, trabajo en iteraciones, documentación. El entregable de esta etapa será una aplicación que pueda ser utilizada en desarrollos posteriores y un sitio web donde la misma se pueda acceder.
+\item Pruebas: Validaremos que nuestra herramienta cumpla con los objetivos buscados trabajando con los docentes de la materia y con opiniones de los alumnos.
+\item Redacción: En esta etapa vamos a documentar no solo la solución sino también los pormenores de su desarrollo, decisiones de diseño, limitaciones, trabajos futuros posibles.
+\item Divulgación: En esta etapa se presentará la herramienta implementada en el objetivo 2) en la comunidad y se la publicará en Internet con la licencia GPL v3.
+\end{enumerate}
+
+\section*{Cronograma propuesto}
+
+\begin{itemize}
+	\item Agosto: Finalización del diseño de la herramienta.
+	\item Septiembre: Implementación de la herramienta con testing.
+	\item Octubre: Implementación de la herramienta con testing y UAT.
+	\item Noviembre: Redacción y entrega. 
+\end{itemize}
+
+\section*{Lugar donde se realizará el trabajo}
+Universidad Nacional de Quilmes.
+
+\section*{Referencias}
+
+\begin{itemize}
+	\item nearley.js.org/
+	\item es.reactjs.org/
+	\item orga.blog.unq.edu.ar/
+	\item presencial.uvq.edu.ar/mod/resource/view.php?id=152577
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "registers_number": 8,
+  "mul_modifies_r7": false,
+  "default_value": {
+    "cells": "zero",
+    "registers": "zero"
+  },
+  "actions_mode": "verbose",
+  "addressing_mode": [
+    {
+      "name": "Register",
+      "enabled": true,
+      "display_name": "Registro"
+    },
+    {
+      "name": "Direct",
+      "enabled": false,
+      "display_name": "Directo"
+    },
+    {
+      "name": "Immediate",
+      "enabled": true,
+      "display_name": "Inmediato"
+    },
+    {
+      "name": "Indirect",
+      "enabled": false,
+      "display_name": "Indirecto"
+    },
+    {
+      "name": "IndirectRegister",
+      "enabled": false,
+      "display_name": "Indirecto Registro"
+    }
+  ],
+  "instruction":[
+    { "name": "ADD",   "enabled": true,  "display_name": "ADD"  },
+    { "name": "SUB",   "enabled": true,  "display_name": "SUB"  },
+    { "name": "CMP",   "enabled": false,  "display_name": "CMP"  },
+    { "name": "MOV",   "enabled": true,  "display_name": "MOV"  },
+    { "name": "MUL",   "enabled": true,  "display_name": "MUL"  },
+    { "name": "DIV",   "enabled": true,  "display_name": "DIV"  },
+    { "name": "CALL",  "enabled": false,  "display_name": "CALL" },
+    { "name": "RET",   "enabled": false,  "display_name": "RET"  },
+    { "name": "JE",    "enabled": false,  "display_name": "JE"   },
+    { "name": "JNE",   "enabled": false,  "display_name": "JNE"  },
+    { "name": "JLE",   "enabled": false,  "display_name": "JLE"  },
+    { "name": "JG",    "enabled": false,  "display_name": "JG"   },
+    { "name": "JL",    "enabled": false,  "display_name": "JL"   },
+    { "name": "JGE",   "enabled": false,  "display_name": "JGE"  },
+    { "name": "JLEU",  "enabled": false,  "display_name": "JLEU" },
+    { "name": "JGU",   "enabled": false,  "display_name": "JGU"  },
+    { "name": "JCS",   "enabled": false,  "display_name": "JCS"  },
+    { "name": "JNEG",  "enabled": false,  "display_name": "JNEG" },
+    { "name": "JVS",   "enabled": false,  "display_name": "JVS"  },
+    { "name": "JMP",   "enabled": false,  "display_name": "JMP"  },
+    { "name": "AND",   "enabled": false,  "display_name": "AND"  },
+    { "name": "OR",    "enabled": false,  "display_name": "OR"   },
+    { "name": "NOT",   "enabled": false,  "display_name": "NOT"  }
+  ]
+}

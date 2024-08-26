@@ -1,0 +1,165 @@
+\subsubsection{ADD}
+Representa la instrucción ADD de la arquitectura Q. Es subclase de FlagInstruction. Sobreescribe los siguientes métodos:
+\begin{itemize}
+\item perform\_operation: recibe los operandos de origen y destino y devuelve la suma de los mismos.
+\item calculate\_overflow: recibe los operandos de origen y destino y el resultado de la operación. Devuelve verdadero si se cumple alguna de las siguientes condiciones: 
+	\begin{itemize}
+	\item Los operandos son positivos y el resultado es negativo.
+	\item Los operandos son negativos y el resultado es positivo.
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{SUB}
+Representa la instrucción SUB de la arquitectura Q. Es subclase de FlagInstruction. Sobreescribe los siguientes métodos:
+\begin{itemize}
+\item perform\_operation: recibe los operandos de origen y destino y devuelve la resta del origen al destino.
+\item calculate\_overflow: recibe los operandos de origen y destino y el resultado de la operación. Devuelve verdadero si se cumple alguna de las siguientes condiciones: 
+	\begin{itemize}
+	\item El destino es negativo, el origen es positivo y el resultado positivo.
+	\item El destino es positivo, el origen es negativo y el resultado negativo.
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{CMP}
+Representa la instrucción CMP de la arquitectura Q. Es subclase de SUB. Sobreescribe el siguiente método:
+\begin{itemize}
+\item execute\_with\_state: recibe el estado y realiza la resta del origen al destino, calculando los flags. No guarda el resultado en el destino.
+\end{itemize}
+
+\subsubsection{MOV}
+Representa la instrucción MOV de la arquitectura Q. Es subclase de Instruction. Sobreescribe los siguientes métodos:
+\begin{itemize}
+\item perform\_operation: recibe los operandos destino y origen y devuelve el origen.
+\item read\_values: recibe el estado y devuelve el resultado de leer el operando origen. No lee el destino.
+\end{itemize}
+
+\subsubsection{MUL}
+Representa la instrucción MUL de la arquitectura Q. Es subclase de FlagInstruction. Sobreescribe el siguiente método:
+\begin{itemize}
+\item perform\_operation: recibe los operandos de origen y destino y devuelve el producto de los mismos.
+\end{itemize}
+
+\subsubsection{DIV}
+Representa la instrucción DIV de la arquitectura Q. Es subclase de FlagInstruction. Sobreescribe el siguiente método:
+\begin{itemize}
+\item perform\_operation: recibe los operandos de origen y destino y devuelve la división entera del destino por el origen. Si el origen es 0 lanza una excepción de tipo DivideByZeroError.
+\end{itemize}
+
+\subsubsection{AND}
+Representa la instrucción AND de la arquitectura Q. Es subclase de FlagInstruction. Sobreescribe el siguiente método:
+\begin{itemize}
+\item perform\_operation: recibe los operandos de origen y destino y devuelve el producto lógico de los mismos.
+\end{itemize}
+
+\subsubsection{OR}
+Representa la instrucción OR de la arquitectura Q. Es subclase de FlagInstruction. Sobreescribe el siguiente método:
+\begin{itemize}
+\item perform\_operation: recibe los operandos de origen y destino y devuelve la suma lógica de los mismos.
+\end{itemize}
+
+
+
+\subsubsection{CALL}
+Representa la instrucción CALL de la arquitectura Q. Es subclase de SourceOnlyInstruction. Sobreescribe el siguiente método:
+\begin{itemize}
+\item execute\_with\_state: recibe el estado y escribe en pila el valor actual del pc, asigna el valor del origen al PC y disminuye el SP en 1.
+\end{itemize}
+
+\subsubsection{JMP}
+Representa la instrucción JMP de la arquitectura Q. Es subclase de SourceOnlyInstruction. Sobreescribe el siguiente método:
+\begin{itemize}
+\item execute\_with\_state: recibe el estado y asigna el valor del origen al PC.
+\end{itemize}
+
+
+
+
+\subsubsection{JE}
+Representa la instrucción JE de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve el valor del flag Z.
+\end{itemize}
+
+\subsubsection{JNE}
+Representa la instrucción JNE de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve el valor negado del flag Z.
+\end{itemize}
+
+\subsubsection{JLE}
+\label{subsubsec:jle}
+
+Representa la instrucción JLE de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve true si el flag Z es true o se da que o el flag N es verdadero o lo es el flag V (disyunción exclusiva), es decir, si se cumple la fórmula: \[Z + (N \oplus V) \]
+\end{itemize}
+
+\subsubsection{JG}
+Representa la instrucción JG de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve true no se cumple la condición de JLE \referencia{subsubsec:jle}, es decir, si se cumple la fórmula: \[\neg(Z + (N \oplus V)) \]
+\end{itemize}
+
+\subsubsection{JL}
+\label{subsubsec:jl}
+
+Representa la instrucción JL de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve true si se cumple que o el flag N es verdadero o lo es el flag V (disyunción exclusiva), es decir, si se cumple la fórmula: \[N \oplus V \]
+\end{itemize}
+
+\subsubsection{JGE}
+Representa la instrucción JGE de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve true si no se cumple la condición de JL \referencia{subsubsec:jl}, es decir, si se cumple la fórmula: \[\neg(N \oplus V) \]
+\end{itemize}
+
+\subsubsection{JLEU}
+Representa la instrucción JLEU de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve true si se cumple que el flag C es verdadero o lo es el flag Z (disyunción inclusiva), es decir, si se cumple la fórmula: \[C + Z \]
+\end{itemize}
+
+\subsubsection{JGU}
+Representa la instrucción JGU de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve true si se cumple que ni el flag C es verdadero ni lo es el flag Z, es decir, si se cumple la fórmula: \[\neg(C + Z) \]
+\end{itemize}
+
+\subsubsection{JCS}
+Representa la instrucción JCS de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve el valor del flag C.
+\end{itemize}
+
+\subsubsection{JNEG}
+Representa la instrucción JNEG de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve el valor del flag N.
+\end{itemize}
+
+\subsubsection{JVS}
+Representa la instrucción JVS de la arquitectura Q. Es subclase de ConditionalJump. Sobreescribe el siguiente método:
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve el valor del flag V.
+\end{itemize}
+
+
+
+
+
+
+\subsubsection{NOT}
+Representa la instrucción NOT de la arquitectura Q. Es subclase de FlagInstruction. Sobreescribe los siguientes métodos:
+\begin{itemize}
+\item perform\_operation: recibe los operandos destino y origen y devuelve el destino negado logicamente.
+\item read\_values: recibe el estado y devuelve el resultado de leer el operando destino. No lee el origen.
+\item disassemble: devuelve una instancia de la clase decodificando sólo el operando destino.
+\end{itemize}
+
+\subsubsection{RET}
+Representa la instrucción RET de la arquitectura Q. Es subclase de Instruction. Sobreescribe los siguientes métodos:
+\begin{itemize}
+\item execute\_with\_state: recibe el estado e incrementa el valor del SP en 1 y lee de memoria la dirección a la que apunta el SP.
+\item disassemble: devuelve una instancia de la clase sin utilizar ningún parámetro.
+\end{itemize}

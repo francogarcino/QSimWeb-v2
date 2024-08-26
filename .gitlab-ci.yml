@@ -1,0 +1,48 @@
+image: node:latest
+
+stages:
+  - test
+  - cypress-e2e
+  - deploy
+
+test:
+  stage: test
+  script:
+    - npm ci
+    - npm test
+  rules:
+    - if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^doc/'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+
+cypress-e2e:
+  image: cypress/base:12
+  stage: cypress-e2e
+  script:
+    - npm ci
+    - BROWSER=none npm run start-test-server
+    - npm run cy:run
+  rules:
+    - if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^doc/'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+
+deploy:
+  stage: deploy
+  image: node:12-buster
+  environment:
+    name: Demo master
+    url: https://qweb-unq.herokuapp.com/
+  dependencies:
+    - test
+  script:
+    - npm install
+    - npm run coverage
+    - apt-get update -qy
+    - apt-get install -y ruby-dev
+    - gem install dpl
+    - dpl --provider=heroku --app=qweb-unq --api-key=$HEROKU_API_KEY
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'

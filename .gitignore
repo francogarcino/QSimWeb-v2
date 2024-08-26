@@ -1,0 +1,10 @@
+node_modules/*
+.nyc_output/
+build/
+cypress/screenshots/
+*.aux
+*.out 
+*.log
+*.synctex.gz
+*.toc
+update-package-version.json

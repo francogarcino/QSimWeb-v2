@@ -1,0 +1,351 @@
+\part{Introducción}
+\label{introduccion}
+
+La materia Organización de Computadoras es dictada en el ciclo básico de la Tecnicatura Universitaria en Programación Informática de la Universidad Nacional 
+de Quilmes y brinda contenidos que aportan un panorama general sobre arquitectura de computadoras. 
+Nuestras computadoras utilizan una arquitectura llamada Arquitectura de Von Neumann, la cual consta de una Unidad Central de Procesamiento (CPU por sus 
+siglas en inglés) y una memoria donde se almacenarán tanto los datos como los programas. Para interactuar con la arquitectura se utilizan lenguajes de 
+programación de bajo nivel, como puede ser el lenguaje ensamblador.
+Una de las implementaciones de la Arquitectura de Von Neumann es x86, la arquitectura creada por Intel que sirve como modelo para los procesadores actuales.
+
+Para poder ejecutar un programa este debe ser ensamblado en memoria. El ensamblado consiste en convertir el código de lenguaje ensamblador en código 
+binario.
+El proceso de ejecución en la arquitectura de Von Neumann consta de 3 etapas: fetch, decode, execute.
+La etapa fetch se encarga de buscar las instrucciones previamente ensambladas en memoria.
+Una vez que se encontraron las instrucciones en memoria, estas son decodificadas en la etapa de decode, donde se resuelven los valores de sus operandos, si
+hubiese alguno.
+Como paso final, se ejecuta la instrucción en la etapa de execute. Dicha ejecución puede llevar a cabo cambios en el estado de la computadora.
+
+En la materia Organización de Computadoras se creó una arquitectura conceptual llamada Q, utilizando el modelo de la Arquitectura de Von Neumann. Dicha arquitectura se define como conceptual ya que no existe una máquina física que funcione en ella.
+A su vez, esta arquitectura cuenta con el lenguaje homónimo para su utilización. Está pensada para la enseñanza de arquitecturas de computadoras en un nivel inicial.
+
+Como la materia es dictada en el ciclo básico, muchos/as estudiantes encuentran la complejidad de no poder ver el resultado de sus programas, ya que deben comprender los conceptos para poder simularlos manualmente. En este sentido, QSim, un simulador de la arquitectura Q que fue desarrolado hace algunos años en el contexto de otro trabajo de inserción profesional realiza un aporte significativo, brindando una interfaz visual para la ejecución de programas Q. Sin embargo, dadas las tecnologías y el paradigma de diseño de aplicaciones utilizado, resulta dificultoso para los y las estudiantes su uso actual. Algunos de los inconvenientes encontrados son:
+\begin{itemize}
+\item Quienes quieren usarlo, deben tener instalado un conjunto de aplicaciones, lo cual aporta complejidades accidentales que podrían ser evitadas.
+\item No puede ser utilizado en dispositivos móviles, ya que las tecnologías utilizadas y la solución propuesta no contemplaban el uso masivo de dispositivos móviles que vemos actualmente.
+\item Falta de accesibilidad para personas que utilicen lectores de pantalla.
+\item Tiene problemas de rendimiento, como la baja velocidad.
+\end{itemize}
+
+Es por eso que se decidió realizar una implementación del lenguaje Q utilizando las tecnologías y paradigmas actuales, evitando las dificultades encontradas en las herramientas mencionadas. El propósito de este trabajo es crear un simulador que permita ejecutar programas en la arquitectura Q. De esta manera las y los estudiantes de la materia tendrán la posibilidad de escribir programas en dicho lenguaje y ver el impacto de los mismos en las partes que componen a la arquitectura, como son registros, memoria, flags y registros especiales. Esta herramienta debe cumplir las siguientes propiedades:
+
+\begin{itemize}
+\item Poder ejecutar cualquier programa de la arquitectura Q.
+\item Permitir la visualización de los resultados o los errores de ejecución.
+\item No requerir instalación.
+\item Poder usarse desde dispositivos móviles.
+\item Ser accesible para estudiantes con disminución visual o daltonismo.
+\end{itemize}
+
+A su vez, este trabajo tiene como objetivo la creación de una librería escrita en javascript, que pueda ser utilizada por otras herramientas que busquen un objetivo similar, separando la lógica del lenguaje de su visualización, permitiendo así, mantener actualizadas las herramientas visuales sin tener que actualizar la lógica del lenguaje.
+
+
+\section{Resumen del trabajo}
+
+\label{resumen}
+
+Esta trabajo se organiza de la siguiente manera:
+
+\begin{itemize}
+\item El capítulo \ref{introduccion} es esta introducción, que pretende establecer el concepto de Arquitectura de computadoras de manera básica,
+la arquitectura Q planteada en la universidad y las motivaciones que llevan al desarrollo de QSim Web, incluyendo un análisis de las herramientas existentes.
+
+\item El capítulo \ref{arquitectura-q} explicará más en detalle la estructura de la arquitectura Q, definiendo sus capas y los conceptos
+que se introducen en cada una de ellas.
+
+\item El capítulo \ref{qsimweb} realiza una descripción de la totalidad del trabajo, diferenciando la interfaz de usuario de la librería QLib.
+\item El capítulo \ref{devoluciones} cuenta las devoluciones de los y las estudiantes luego de haber utilziado la herramienta durante un cuatrimestre.
+\item El capítulo \ref{parte_conclusiones} describe las conclusiones desarrolladas a partir de la realización del trabajo.
+
+\end{itemize}
+
+\part{Arquitectura Q}
+\label{arquitectura-q}
+En la materia Organización de Computadoras se creó una arquitectura de computadoras teórica llamada Q, utilizando el modelo de la Arquitectura de Von Neumann. 
+A su vez, esta arquitectura cuenta con el lenguaje homónimo para su utilización. Está pensada para la enseñanza de conceptos de organización y arquitecturas de computadoras
+en un nivel inicial.
+
+Su diseño está dividido en 5 capas llamadas Q1, Q2, Q3, Q4, Q5. Cada capa contiene a las instrucciones y modos de direccionamiento
+de la capa anterior, agregando nuevas funciones a la misma. Esto permite que un programa escrito en Q1 pueda ser ejecutado en Q5, obteniendo el mismo resultado.
+
+\section{Q1}
+El objetivo de esta capa es introducir algunos conceptos básicos de la programación de lenguajes de bajo nivel, como son las instrucciones, registros e inmediatos.
+
+Sus caracteristicas son: 8 registros de uso general, llamados desde R0 a R7; un modo de direccionamiento para trabajar con constantes llamado Inmediato y 5 instrucciones de dos operandos cada una, MOV, ADD, SUB, DIV, MUL.
+
+Los registros tienen 16 bits de almacenamiento. Los inmediatos tienen 16 bits de longitud y se escriben en hexadecimal con la 
+sintaxis: 0xAAAA.
+
+Las instrucciones de esta capa son:
+\begin{table}[H]
+  \label{tab:instrucciones}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c |}
+      \hline
+      \textbf{Operación} & \textbf{Cod Op} & \textbf{Efecto}                                   & \textbf{Ejemplo de uso}   \\ \hline
+      ADD                & 0010            & destino \leftarrow destino + origen               & ADD R7, 0x23FA            \\ \hline
+      DIV                & 0111            & destino \leftarrow destino \% origen              & DIV R4, 0x23FA            \\ \hline
+      MOV                & 0001            & destino \leftarrow origen                         & MOV R4, R2                \\ \hline
+      MUL                & 0000            & destino \leftarrow destino \times origen          & MUL R5, 0x0ABC            \\ \hline
+      SUB                & 0011            & destino \leftarrow destino - origen               & SUB R2, [0x0ABC]          \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+Todas estas instrucciones comparten el siguiente formato:
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c | c |}
+      \hline
+      \textbf{Cod Op} & \textbf{Modo Destino} & \textbf{Modo Origen} & \textbf{Destino} & \textbf{Origen} \\ \hline
+      4 bits          & 6 bits                & 6 bits               & 16 bits          & 16 bits         \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Los modos de direccionamiento son:
+\begin{threeparttable}
+  \begin{center}
+    \label{tab:modosQ1}
+    \begin{tabular}{| l | l |}
+      \hline
+      \textbf{Modo}      & \textbf{Codificación} \\ \hline
+      Inmediato          & 000000                \\ \hline
+      Registro           & 100rrr \footnotemark              \\ \hline
+    \end{tabular}
+    \footnotetext[1]{ La codificación de un registro varía según el número del mismo. R2 se codifica 100010 ya que 2 se representa como 010 en BSS(3).}
+  \end{center}
+\end{table}
+
+Un ejemplo de instrucción invalida es: ADD 0x23FA, R7 porque una constante no puede almacenar el resultado de una operación.
+
+Un ejemplo de ensamblado de la instrucción ADD R6, 0x2323 en la celda 0x00F0
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c | c |}
+      \hline
+      \textbf{Celda}  & \textbf{Valor}               \\ \hline
+      ...             & ...                          \\ \hline
+      0x00F0          & 0010 100110 000000           \\ \hline
+      0x00F1          & 0010 0011 0010 0011          \\ \hline
+      ...             & ...                          \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\section{Q2}
+El objetivo de esta capa es brindar la posibilidad de interactuar con la memoria, algo que se omite en Q1 por simplicidad.
+
+Para ello, se agrega un modo de direccionamiento llamado Directo el cual especifica la dirección de memoria donde se encuentra el valor del operando. La dirección del 
+operando se escribe entre corchetes: [0x23AB].
+
+Los modos de direccionamiento son:
+\begin{threeparttable}
+  \begin{center}
+    \label{tab:modosQ1}
+    \begin{tabular}{| l | l |}
+      \hline
+      \textbf{Modo}      & \textbf{Codificación} \\ \hline
+      Inmediato          & 000000                \\ \hline
+      Registro           & 100rrr                \\ \hline
+      \textbf{Directo}   & \textbf{001000}       \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Un ejemplo de ensamblado de la instrucción ADD R6, [0x2323] en la celda 0x00F0
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c | c |}
+      \hline
+      \textbf{Celda}  & \textbf{Valor}               \\ \hline
+      ...             & ...                          \\ \hline
+      0x00F0          & 0010 100110 001000           \\ \hline
+      0x00F1          & 0010 0011 0010 0011          \\ \hline
+      ...             & ...                          \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+\section{Q3}
+El objetivo de esta capa es brindar la posibilidad de escribir rutinas, que permiten explicar los conceptos de reutilización, modularización y documentación.
+
+En esta capa toman relevancia los registros PC, SP, IR, MAR, MBR y los conceptos de pila y etiqueta.
+\begin{itemize}
+  \item El PC es un registro especial que sirve para indicar a la CPU cuál es la siguiente instrucción a ejecutar. 
+  Al leer una instrucción su valor se incrementa en 1.
+  \item La pila es una sección reservada de la memoria principal para almacenar las direcciones de retorno de las rutinas invocadas.
+  \item El SP es un registro especial que funciona como puntero a la pila. Es utilizado por las instrucciones CALL y RET descriptas a continuación.
+  \item El IR es un registro especial que contiene la instrucción que está siendo ejecutada (o parte de ella). Tiene 48 bits de almacenamiento.
+  \item El MAR es un registro especial que contiene la dirección de memoria que se está leyendo o escribiendo.
+  \item El MBR es un registro especial que contiene el valor de la dirección de memoria que indica el MAR.
+  \item Las etiquetas son cadenas de texto que se utilizan para abstraer el valor de una constante. Se pueden utilizar como operando de la
+  instrucción CALL. Sus nombres no pueden repetirse ya que funcionan como identificadores.
+\end{itemize}
+
+Además de las caracteristicas de las capas anteriores, en esta capa se agregan dos instrucciones: CALL y RET que permiten interactuar con rutinas.
+
+CALL: Invoca a una rutina, para ello guarda el PC en la pila, decrementa el SP en 1 y copia el PC a la dirección de memoria donde está ensamblada la primera instrucción de dicha rutina. 
+
+Su formato de instrucción es:
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c |}
+      \hline
+      \textbf{Cod Op} & \textbf{Relleno} & \textbf{Modo Origen} & \textbf{Origen} \\ \hline
+      4 bits          & 6 bits                & 6 bits          & 16 bits         \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Un ejemplo de uso es:
+\begin{center}
+  CALL calcularPromedio
+\end{center}
+
+RET: Finaliza la ejecución de una rutina, para ello incrementa el SP y pone en el PC el valor de la pila.
+
+Su formato de instrucción es:
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c |}
+      \hline
+      \textbf{Cod Op} & \textbf{Relleno}  \\ \hline
+      4 bits          & 12 bits           \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Su uso es:
+\begin{center}
+  RET
+\end{center}
+
+Las instrucciones de esta capa son:
+\begin{table}[H]
+  \label{tab:instrucciones}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c |}
+      \hline
+      \textbf{Operación} & \textbf{Cod Op} & \textbf{Efecto}                                                  & \textbf{Ejemplo de uso}   \\ \hline
+      ADD                & 0010            & destino \leftarrow destino + origen                              & ADD R7, 0x23FA            \\ \hline
+      DIV                & 0111            & destino \leftarrow destino \% origen                             & DIV R4, 0x23FA            \\ \hline
+      MOV                & 0001            & destino \leftarrow origen                                        & MOV R4, R2                \\ \hline
+      MUL                & 0000            & destino \leftarrow destino \times origen                         & MUL R5, 0x0ABC            \\ \hline
+      SUB                & 0011            & destino \leftarrow destino - origen                              & SUB R2, [0x0ABC]          \\ \hline
+      CALL               & 1011            & [SP] \leftarrow PC ; SP \leftarrow SP - 1 ; PC \leftarrow origen & CALL unaRutina            \\ \hline
+      RET                & 1100            & SP \leftarrow SP + 1 ; PC \leftarrow [SP]                        & RET                       \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\section{Q4}
+El objetivo de esta capa es introducir los conceptos de ejecución condicional y repeticiones. Para ello se introducen los conceptos de flags y saltos.
+Los flags son registros de 1 bit que se calculan al ejecutarse instrucciones aritméticas. 
+\begin{itemize}
+  \item Z: es 1 cuando el resultado de la operación es 0.
+  \item N: es 1 cuando el resultado de la operación es negativo.
+  \item C: es 1 cuando el resultado de la operación tiene carry o borrow en el bit más significativo.
+  \item V: es 1 cuando el resultado de la operación tiene overflow en complemento a 2.
+\end{itemize}
+
+Las caracteristicas de esta capa son, además de las mencionadas anteriormente, saltos condicionales relativos y saltos incondicionales absolutos.
+
+La instrucción salto incondicional absoluto es JMP, que copia el PC a la dirección de memoria indicada por su etiqueta.
+
+Su formato de instrucción es:
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c |}
+      \hline
+      \textbf{Cod Op} & \textbf{Relleno} & \textbf{Modo Origen} & \textbf{Origen} \\ \hline
+      4 bits          & 6 bits                & 6 bits          & 16 bits         \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+Un ejemplo de uso es:
+\begin{center}
+  JMP esNumeroPositivo
+\end{center}
+
+Las instrucciones de saltos condicionales relativos son las nombradas a continuación, cuya ejecución tiene como efecto incrementar o decrementar el PC dado un desplazamiento, si su condición de salto se cumple.
+
+\begin{table}[H]
+  \begin{center}
+    \begin{tabular}{| c | c | c | c | c |}
+      \hline
+      \textbf{Operación} & \textbf{Cod Op}         & \textbf{Descripción}    & \textbf{Condición de salto}   & \textbf{Ejemplo de uso} \\ \hline
+      JE                 & 0001                    & Igual / Cero            & Z                             & JE etiqueta             \\ \hline
+      JNE                & 1001                    & No igual                & not Z                         & JNE etiqueta            \\ \hline
+      JLE                & 0010                    & Menor o igual           & Z or (N xor V)                & JLE etiqueta            \\ \hline
+      JG                 & 1010                    & Mayor                   & not (Z or (N xor V))          & JG etiqueta             \\ \hline
+      JL                 & 0011                    & Menor                   & N xor V                       & JL etiqueta             \\ \hline 
+      JGE                & 1011                    & Mayor o igual           & not (N xor V)                 & JGE etiqueta            \\ \hline
+      JLEU               & 0100                    & Menor o igual sin signo & C or Z                        & JLEU etiqueta           \\ \hline
+      JGU                & 1100                    & Mayor sin signo         & not (C or Z)                  & JGU etiqueta            \\ \hline
+      JCS                & 0101                    & Carry / Menor sin signo & C                             & JCS etiqueta            \\ \hline
+      JNEG               & 0110                    & Negativo                & N                             & JNEG etiqueta           \\ \hline
+      JVS                & 0111                    & Overflow                & V                             & JVS etiqueta            \\ \hline
+    \end{tabular}
+    \label{tab:saltos}
+  \end{center}
+\end{table}
+Su formato de instrucción es:
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c |}
+      \hline
+      \textbf{Prefijo} & \textbf{Cod Op} & \textbf{Desplazamiento} \\ \hline
+      4 bits           & 4 bits           & 8 bits                 \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+\section{Q5}
+En esta última capa se definen dos modos de direccionamiento indirectos, que permiten el trabajo con recorridos, arreglos e iteraciones. Si bien es técnicamente posible realizar lo mencionado sin estos modos, agregaría una complejidad no buscada en la materia.
+Estos modos de direccionamiento son Indirecto e Indirecto Registro. 
+
+El modo de direccionamiento Indirecto especifica la dirección de memoria donde se encuentra la dirección de memoria que contiene el valor del operando. La dirección del 
+  operando se escribe entre doble corchetes: [[0x23AB]].
+
+El modo de direccionamiento Indirecto Registro especifica el registro donde se encuentra la dirección de memoria que contiene el valor del operando. El registro se escribe entre corchetes: [R5].
+
+Los modos de direccionamiento y sus codificiones son:
+\begin{threeparttable}
+  \begin{center}
+    \label{tab:modosQ1}
+    \begin{tabular}{| l | l |}
+      \hline
+      \textbf{Modo}                 & \textbf{Codificación} \\ \hline
+      Inmediato                     & 000000                \\ \hline
+      Registro                      & 100rrr                \\ \hline
+      Directo                       & 001000                \\ \hline
+      \textbf{Indirecto}            & \textbf{011000}       \\ \hline
+      \textbf{Indirecto Registro}   & \textbf{110rrr}       \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+
+Un ejemplo de ensamblado de la instrucción ADD [R6], [[0x2323]] en la celda 0x00F0
+\begin{table}[H]
+  \label{tab:formatoinstruccion}
+  \begin{center}
+    \begin{tabular}{| c | c | c | c | c |}
+      \hline
+      \textbf{Celda}  & \textbf{Valor}               \\ \hline
+      ...             & ...                          \\ \hline
+      0x00F0          & 0010 110110 011000           \\ \hline
+      0x00F1          & 0010 0011 0010 0011          \\ \hline
+      ...             & ...                          \\ \hline
+    \end{tabular}
+  \end{center}
+\end{table}

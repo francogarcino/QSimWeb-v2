@@ -1,0 +1,642 @@
+\part{Diseño}
+\label{disenio}
+
+\section{La computadora}
+El nucleo de la librería se compone de el siguiente conjunto de clases que representan las partes de la arquitectura, definiendo su comportamiento, relaciones y estructura:
+
+\begin{itemize}
+\item Computer
+\item State
+\item Memory
+\item Instruction
+\item Operand
+\item Label
+\item LabelReference
+\item Routine
+\end{itemize}
+
+Además, hay clases que no representan partes de la arquitectura pero son útiles para hacer de la herramienta, una herramienta didactica:
+\begin{itemize}
+\item Action
+\item DefaultValue
+\end{itemize}
+
+Para identificar errores conocidos, se definieron distintos tipos de excepciones:
+\begin{itemize}
+\item DisabledAddressingModeError
+\item DisabledInstructionError
+\item DisabledRegisterError
+\item DivideByZeroError
+\item ExcecutionFinished
+\item ImmediateAsTarget
+\item IncompleteRoutineError
+\item UndefinedCellValueError
+\item UndefinedLabel
+\end{itemize}
+
+\subsection{Computer}
+La clase Computer representa a la CPU y conoce el estado de la ejecución. Un programa Q puede ser ejecutado a través de una instancia de dicha clase. 
+
+\subsubsection{Ensamblado}
+Como los programas deben ser ensamblados, provee un método para ensamblar rutinas o programas: load\_many. Este método, recibe una lista de instancias de la clase Routine y carga sus instrucciones en memoria. Si alguna de las rutinas de la lista contiene etiquetas, estas serán traducidas a direcciones de memoria ya que ensamblado en memoria sólo puede haber binario. Si alguna de estas etiquetas no está definida, se lanzará un error, clasificado como UndefinedLabel.
+Si en el proceso de carga de instrucciones se encuentra un operando de tipo Inmediato como destino, se lanzará un error, clasificado como ImmediateAsTarget.
+Además, pone el PC en la dirección de la primer rutina (o programa) de la lista.
+
+\subsubsection{Ejecución}
+La ejecución comenzará desde la ubicación actual del PC, que será como se dijo anteriormente, la dirección de la primera rutina ensamblada.
+
+La computadora provee 3 métodos de ejecución:
+\begin{itemize}
+\item Ejecución completa: representado con el método execute, el cual realiza la ejecución del programa completo, invocando rutinas si lo requiere hasta llegar a la condición de finalización \referencia{subsec:condfin}.
+\item Ejecución de una instrucción: representado con el método execute\_cycle, el cual realiza la ejecución de sólo un ciclo (compuesto por búsqueda de instrucción, decodoficación de instrucción, ejecución de instrucción y almacenamiento de resultado).
+\item Ejecución de una instrucción con detalle: representado con el método execute\_cycle\_detailed, el cual realiza la ejecución de sólo un ciclo, brindando un listado de instancias de la clase Action que representan lecturas o escrituras en memoria, registros, PC, SP, IR.
+\end{itemize}
+
+\subsubsection{Otros métodos}
+\begin{itemize}
+\item get\_memory: Es util para realizar interfaces de usuario que representen la ejecución, conocer el estado de la memoria
+\item restart: Sirve para marcar la finalización de una ejecución y obtener un nuevo estado de la computadora, con sus valores por defecto.
+\item restart\_actions: Reinicia las acciones guardadas en el estado. Puede ser util al cambiar entre los modos de ejecución.
+\end{itemize}
+
+
+\subsubsection{Condición de finalización}
+
+En la arquitectura Q no existe la idea de finalización de ejecución. Esto puede ser confuso para los/las estudiantes, ya que se esperaría que el programa tenga un inicio y 
+un resultado final. 
+Para determinar si un programa finalizó, analizamos las siguientes condiciones: 
+Al iniciar una ejecución las celdas que no hayan sido escritas, no tendrán valor. Por lo tanto el PC eventualmente llegará a una celda no incializada, esto puede darse por dos 
+razones:
+\begin{itemize}
+  \item Un salto o una llamada a rutina en una celda vacía.
+  \item Dado que el PC se incrementa de a una celda, eventualmente llegará a una celda vacía.
+\end{itemize}
+
+Analizando dichas razones: 
+\begin{itemize}
+  \item Si se llega a una celda no inicializada mediante un salto o una llamada a rutina, asumimos que es un error de programación.
+  \begin{itemize}
+    \item En este caso se salta a la celda 0x0fff que no fue previamente inicializada.
+    \begin{center}
+      MOV R1 R2 \\
+      JMP 0x0fff
+    \end{center}
+    \item En este caso se llama a rutina pero esta etiqueta no está definida.
+    \begin{center}
+      MOV R3 R0 \\
+      CALL rutina
+    \end{center}
+  \end{itemize}
+
+  \item Si se llega a una celda no inicializada mediante un incremento \textit{orgánico} \footnote{Se considera que el PC se incrementó organicamente cuando su incremento no es causado por un offset o por una asignación directa.} del PC pueden darse dos casos:
+  \begin{itemize}
+    \item La pila no está vacía, por lo tanto asumimos un error de programación. Posiblemente por el olvido de un RET.
+    \begin{center}
+      MOV R3 R0 \\
+      CALL rutina \\
+      MOV R0 R1 \\
+    \end{center}
+    \begin{center}
+      [ASSEMBLE: 0x00ff] \\
+      rutina: MOV R2 R3
+    \end{center}
+    \item La pila está vacía, por lo tanto el programa finalizó.
+    \begin{center}
+      MOV R3 R0 \\
+      CALL rutina \\
+      MOV R0 R1 \\
+    \end{center}
+    \begin{center}
+      [ASSEMBLE: 0x00ff] \\
+      rutina: MOV R2 R3 \\
+      RET
+    \end{center}
+  \end{itemize}
+\end{itemize}
+Concluyendo, se asume la finalización de la ejecución cuando:
+\begin{itemize}
+	\item La celda leída está no inicializada.
+	\item El PC no fue modificado mediante un salto o una llamada a rutina.
+	\item La pila se encuentra vacía.
+\end{itemize}
+
+\label{subsec:condfin}
+
+\subsection{State}
+La clase State representa los cambios que se realizan en la memoria, registros y flags a lo largo de la ejecución. Además provee métodos para interactuar con dichos componentes. Cuando se inicializa la Computer, se le asignará un estado inicial con valores por defecto.
+
+Los métodos expuestos son: 
+\begin{itemize}
+\item load: recibe el código binario de una instrucción y lo carga en memoria.
+\item increment\_pc: incrementa en 1 el valor del Program Counter marcando que el PC fue modificado organicamente.
+\item offset\_pc: recibe un valor numerico e incrementa en dicho valor el Program Counter marcando que el PC no fue modificado organicamente.
+\item assign\_pc: recibe un valor numerico y cambia el Program Counter a dicho valor, marcando que el PC no fue modificado organicamente.
+\item recover\_stack: recibe un valor numerico y cambia el Program Counter a dicho valor, marcando que el PC fue modificado organicamente.
+\item read\_register: recibe el número de registro y devuelve el contenido del registro en hexadecimal.
+\item write\_register: recibe el número de registro y el valor a escribir y modifica el contenido del registro con el valor dado.
+\item read\_memory: recibe la dirección de la celda a leer y devuelve el contenido de la misma. En este método se evalúa la condición de finalización \referencia{subsec:condfin}.
+\item write\_memory: recibe la dirección de la celda y el valor a escribir y modifica el contenido de la misma con el valor dado.
+\item write\_stack: similar a write\_memory pero indicando mediante una acción que la escritura fue en las celdas reservadas a la pila.
+\item calculate\_flags: calcula los flags Z y N que son independientes de la instrucción ejecutada.
+\item calculate\_labels: recibe un conjunto de instrucciones y calcula las direcciones asociadas a las etiquetas que contenga dicho conjunto.
+\end{itemize}
+
+\subsection{Memory}
+La clase Memory representa a la memoria de la arquitectura Q. Los métodos para interactuar con ella son:
+
+\begin{itemize}
+\item getAll: devuelve una copia de la memoria, sirve para poder mostrarla en una interfaz gráfica.
+\item read: recibe una dirección y devuelve el contenido de la memoria en dicha dirección.
+\item write: recibe una dirección y un valor y modifica el contenido de la memoria en dicha dirección con dicho valor.
+\end{itemize}
+
+\subsection{Instruction}
+Es la abstracción de una instrucción de la arquitectura Q, tiene métodos comunes a todas las instrucciones y determina la estructura de funcionamiento general para las particularidades de cada instrucción.
+
+Los métodos son:
+\begin{itemize}
+\item get\_by\_code: recibe el binario de una celda y devuelve, de ser posible, la clase que representa a una instrucción. Si la instrucción se encuentra deshabilitada por configuración, lanza una excepción de tipo DisabledInstructionError.
+\item disassemble: recibe una clase que representa a una instrucción, el binario de la celda donde dicha clase se obtuvo y el estado actual y devuelve la instancia de dicha clase, con sus operandos decodificados.
+\item calculate\_label: recibe un listado de etiquetas y el estado, incrementa el PC y devuelve el listado de etiquetas. Al tratarse de una instrucción, no modificará el listado \referencia{sec:labels}.
+\item update\_label: recibe un listado de etiquetas y el estado, devuelve la instrucción actual sin modificaciones \referencia{sec:labels}. 
+\item load: recibe el estado y carga el binario de la instancia en el estado.
+\item execute\_with\_state: recibe el estado y lo modifica acorde al efecto dependiendo de la instrucción que represente. Delega en el método perform\_operation, que será implementado por cada instrucción, la aplicación del efecto. Delega en el método calculate\_flags el cálculo de los flags Carry(C) y Overflow(V), el cual será implementado por cada instrucción.
+\end{itemize}
+
+\subsubsection{FlagInstruction}
+Es la abstracción de las instrucciones que modifican los flags. Cuenta con los siguientes métodos:
+
+\begin{itemize}
+\item calculate\_flags el cual recibe el estado, los operandos de origen y destino y el resultado de la operación y calcula los flags en el estado, delegando en el estado el cálculo de los flags Zero(Z) y Negative(N) en el mismo. 
+\item calculate\_carry: recibe el estado y los operandos de origen y destino, y provee una implementación por defecto del flag de carry.	
+\item calculate\_overflow: recibe los operandos de origen y destino y el resultado de la operación, proveyendo una implementación por defecto del flag overflow.
+\end{itemize}
+
+Las instrucciones de este tipo son: ADD, SUB, DIV, MUL, MOV, CMP, AND, OR.
+
+
+\subsubsection{SourceOnlyInstruction}
+Es la abstracción de las instrucciones que sólo reciben el operando origen. Estas instrucciones pueden recibir una etiqueta como origen, por lo que contempla este caso \referencia{sec:labels}.
+Sobreescribe los siguientes métodos:
+\begin{itemize}
+\item read\_values: recibe el estado y devuelve el resultado de leer el operando origen. No lee el destino.
+\item disassemble: devuelve una instancia de la clase decodificando sólo el operando origen.
+\item update\_label: recibe una lista de etiquetas y el estado, su comportamiento es el siguiente: si recibió una etiqueta como origen, la reemplaza con un inmediato cuyo valor es la celda donde la etiqueta se encuentra en caso de encontrarla en la lista de etiquetas, en caso de no encontrarla lanza una excepción de tipo UndefinedLabel. Si su origen no era una etiqueta, hará lo mismo que su superclase.
+\end{itemize}
+
+Las instrucciones de este tipo son: CALL, JMP.
+
+\subsubsection{ConditionalJump}
+Es la abstracción de las instrucciones que representan saltos condicionales. Estas instrucciones pueden recibir una etiqueta como origen, por lo que contempla este caso \referencia{sec:labels}.
+Sobreescribe los siguientes métodos:
+\begin{itemize}
+\item disassemble: devuelve una instancia de la clase decodificando el desplazamiento.
+\item update\_label: recibe una lista de etiquetas y el estado, su comportamiento es el siguiente: si recibió una etiqueta y la encuentra en la lista de etiquetas, calcula el desplazamiento de la misma. En caso de no encontrarla lanza una excepción de tipo UndefinedLabel. Si no recibió una etiqueta, hará lo mismo que su superclase.
+\item execute\_with\_state: recibe el estado y si se cumple la condición de salto, modifica el pc, sumandole el desplazamiento y marcandolo como modificado no organicamente.
+\end{itemize}
+
+Define el siguiente método para que sus subclases lo definan: 
+\begin{itemize}
+\item condition\_matches: recibe el estado y devuelve true si se cumple la condición de salto de la clase concreta.
+\end{itemize}
+
+Las instrucciones de este tipo son: JE, JNE, JLE JG, JL, JGE, JLEU, JGU, JCS, JNEG, JVS.
+
+
+\subsubsection{Otras instrucciones}
+Hay instrucciones que no pertecen a los grupos anteriormente mencionados: 
+\begin{itemize}
+  \item La instrucción RET, que no tiene operandos.
+  \item La instrucción NOT, que sólo tiene un operando destino.
+\end{itemize}
+
+\subsection{Manejo de etiquetas}
+\label{sec:labels}
+Las etiquetas permiten al usuario indicar direcciones de memoria o desplazamientos del PC con la ventaja de no tener que escribir los valores absolutos proveyendo en cambio un nombre asigando a ese valor.
+
+\subsubsection{Label}
+Nuestro programa puede ser un conjunto de intstrucciones y etiquetas. Estas etiquetas estan compuestas por un nombre único que la identifica y la instrucción a la que hace referencia.
+Contiene los siguientes métodos:
+
+\begin{itemize}
+	\item load: recibe el estado e invoca el método load de su instrucción con el estado recibido.
+	\item calculate\_label: recibe una lista de etiquetas y el estado y agrega a la lista de etiquetas la dirección actual del PC y su nombre. Ademas invoca al método calculate\_label de su instrucción.
+	\item update\_label: recibe una lista de etiquetas y el estado e invoca al método update\_label de su instrucción.
+\end{itemize}
+Los métodos load y update\_label estan presentes para poder tratar tanto a una instrucción como a una etiqueta por igual.
+
+\subsubsection{LabelReference}
+Representa la referencia a una etiqueta usada como operando de una instrucción.
+
+\subsection{Action}
+Una acción representa un evento que sucede a lo largo del ciclo de ejecución de un programa. Sirve como mecanismo de comunicación entre la librería y la interfaz visual.
+Existen las siguientes acciones:
+
+\begin{itemize}
+	\item update\_ir: Acción que representa la actualización del IR.
+	\item assign\_pc: Acción que representa el cambio inorgánico del PC. 
+	\item read\_register: Acción que representa la lectura de un registro.
+	\item write\_register: Acción que representa la escritura de un registro.
+	\item read\_memory: Acción que representa la lectura de una celda de memoria.
+	\item assemble: Acción que representa la escritura en una celda de memoria durante el cargado de un programa.
+	\item write\_memory: Acción que representa la escritura en una celda de memoria.
+	\item write\_stack: Acción que representa la escritura en una celda de memoria reservada a la pila.
+\end{itemize}
+
+\subsection{Routine}
+Una rutina es un conjunto de una o varias instrucciones que comienza desde una celda especifica de memoria, esta celda es donde se ensamblará la primer instrucción.  
+Implementa el siguiente método:
+
+\begin{itemize}
+	\item add\_instruction: Recibe una instrucción y la agrega a su lista de instrucciones.
+\end{itemize}
+ 
+\subsection{Operand}
+Los operandos son los encargados de definir cómo se modifica el estado.
+Operand, es la abstracción de un operando o modo de direccionamiento de la arquitectura Q y define el siguiente método:
+ 
+\begin{itemize}
+    \item get\_by\_code: recibe coordenadas y un código y devuelve el operando específico para estos, si el mismo está deshabilitado, se levantará la excepción DisabledAddressingModeError para indicar lo sucedido. Las coordenadas son las que indicarán qué bites del binario observar para determinar si el código corresponde al de un operando en específico. 
+\end{itemize}
+ 
+\subsubsection{Register}
+Representa el modo de direccionamiento Registro de la arquitectura Q, este modifica el registro asociado con su valor, dentro del estado. 
+Es subclase de Operand, es identificado por el código 100{N° de registro} y define los siguientes métodos:
+ 
+\begin{itemize}
+    \item has\_op\_code: recibe coordenadas y un código e identifica si estos valores corresponden al código asignado para la clase Register retornando un booleano como respuesta.
+    \item decode: recibe coordenadas, un código y el estado y retorna una instancia de Register específica para este.
+    \item set\_value: recibe el estado y un valor y guarda el registro del valor especificado en el estado.
+    \item get\_value: recibe el estado y retorna el valor del Register.
+\end{itemize}
+Ejemplo: MOV R1 \textbf{R1}
+ 
+\subsubsection{IndirectRegister}
+Representa el modo de direccionamiento Registro Indirecto de la arquitectura Q, éste modifica la dirección de memoria apuntada por el registro asociado con su valor, dentro del estado.
+Es subclase de Operand, es identificado por el código 110{N° de registro} y define los siguientes métodos:
+ 
+\begin{itemize}
+    \item has\_op\_code: recibe coordenadas y un código e identifica si estos valores corresponden al código asignado para la clase IndirectRegister retornando un booleano como respuesta.
+    \item decode: recibe coordenadas, un código y el estado y retorna una instancia de IndirectRegister específica para este.
+    \item set\_value: recibe el estado y un valor y escribe el valor especificado dentro de la celda en memoria equivalente al valor del registro actual.
+    \item get\_value: recibe el estado y retorna el valor de la celda en memoria equivalente al valor del registro actual.
+\end{itemize}
+Ejemplo: MOV R1 \textbf{[R1]}
+ 
+\subsubsection{Immediate}
+Representa el modo de direccionamiento Inmediato de la arquitectura Q, este no modifica el estado ya que representa a un valor literal.
+Es subclase de Operand, se identifica por el codigo 000000 y define los siguientes métodos:
+ 
+\begin{itemize}
+    \item has\_op\_code: recibe coordenadas y un código e identifica si estos valores corresponden al código asignado para la clase Inmediate retornando un booleano como respuesta.
+    \item decode: recibe coordenadas, un código y el estado y devuelve el valor del inmediato ensamblado en memoria. Aumenta el PC en 1.
+    \item get\_value: recibe el estado y retorna el valor del inmediato actual.
+    \item binary\_value: retorna el valor actual del inmediato expresado en binario.
+\end{itemize}
+Ejemplo: MOV R1 \textbf{0x0000}
+ 
+\subsubsection{Direct}
+Representa el modo de direccionamiento directo de la arquitectura Q, este modifica la dirección de memoria asociada a su valor, dentro del estado.
+Es subclase de Operand, se identifica por el código 001000 y define los siguientes métodos:
+ 
+\begin{itemize}
+    \item has\_op\_code: recibe coordenadas y un código e identifica si estos valores corresponden al código asignado para la clase Direct retornando un booleano como respuesta.
+    \item decode: recibe coordenadas, un código y el estado y devuelve el valor de la celda apuntada por el valor del directo ensamblado en memoria. Aumenta el PC en 1
+    \item set\_value: recibe el estado y un valor y escribe el valor especificado dentro de la celda en memoria cuya dirección es equivalente al valor del directo.
+    \item get\_value: recibe el estado y retorna el valor de la celda en memoria que su dirección sea equivalente al valor del directo actual.
+\end{itemize}
+Ejemplo: MOV R1 \textbf{[0x0000]}
+ 
+\subsubsection{Indirect}
+Representa el modo de direccionamiento Indirecto de la arquitectura Q, este modifica la dirección de memoria apuntada por la dirección de memoria asociada a su valor, dentro del estado.
+Es subclase de Operand, se identifica por el código 011000 y define los siguientes métodos:
+ 
+\begin{itemize}
+    \item has\_op\_code: recibe coordenadas y un código e identifica si estos valores corresponden al código asignado para la clase Indirect retornando un booleano como respuesta.
+    \item decode: recibe coordenadas, un código y el estado y devuelve el valor de la celda apuntada por el valor del indirecto ensamblado en memoria. Aumenta el PC en 1
+    \item set\_value: recibe el estado y un valor y escribe el valor especificado dentro de la celda en memoria que su dirección sea equivalente al valor de la celda cuya dirección es equivalente al valor de la celda apuntada por el indirecto.
+    \item get\_value: recibe el estado y retorna el valor de la celda en memoria que su dirección sea equivalente al valor de la celda cuya dirección es equivalente al valor de la celda apuntada por el indirecto.
+\end{itemize}
+Ejemplo: MOV R1 \textbf{[[0x0000]]}
+
+
+
+\subsection{Excepciones}
+Existen distintos errores que la librería lanza para que puedan ser interpretados por el usuario de la misma y permitir actuar en consecuencia. 
+Las clases de error son las siguientes:
+
+\begin{itemize}
+  \item UndefinedLabel: este error es lanzado cuando se encuentra un uso de una etiqueta que no está definida en el programa. Un ejemplo de programa que lanzaría este error es:
+  \begin{center}
+    MOV R3 R0 \\
+    CALL rutina \\
+    ADD R7 R3
+  \end{center}
+  \item ImmediateAsTarget: este error es lanzado cuando el operando destino de una operación es un Inmediato. Un ejemplo de programa que lanzaría este error es:
+  \begin{center}
+    MOV 0x2300 [0xAAAA]
+  \end{center}
+  \item DisabledInstructionError: este error es lanzado cuando la configuración tiene deshabilitada alguna instrucción utilizada en el programa \referencia{subsec:config}.
+  \item DisabledAddressingModeError: este error es lanzado cuando la configuración tiene deshabilitado algún modo de direccionamiento utilizado en el programa.
+  \item DisabledRegisterError: este error es lanzado cuando la configuración tiene limitada la cantidad de registros y un registro mayor al máximo es utilizado en el programa.
+  \item UndefinedCellValueError: este error es lanzado cuando una celda no inicializada es leída y la configuración tiene Error como método de manejo de celdas no inicializadas.
+  \item DivideByZeroError: este error es lanzado cuando un programa realiza una división por 0. Un ejemplo es: 
+  \begin{center}
+    DIV R0 0x0000
+  \end{center}
+  \item IncompleteRoutineError: este error es lanzado cuando se llega a una celda no inicializada y el SP no es igual al estado inicial (0xFFEF). Posiblemente causado por el olvido de un RET. Un ejemplo es:
+  \begin{center}
+    CALL rutina \\
+    
+    [ASSEMBLE: 0x2320] \\
+    rutina: MOV R0 0x0002 \\
+  \end{center}
+  \item ExcecutionFinished: este error es lanzado cuando se finaliza la ejecución correctamente. Es un error interno y no es lanzado hacia los usuarios de la librería.
+\end{itemize}
+
+
+\subsection{Configuración}
+\label{subsec:config}
+Descripción de la config
+
+\subsubsection{DefaultValue}
+Esta clase es una abstracción de los posibles valores que puede tomar una celda o un registro no inicializado. Tiene dos subclases:
+\begin{itemize}
+  \item DefaultCellValue: representa los posibles valores que una celda puede tomar por defecto, es decir, cuando no está incializada. Los posibles valores son:
+  \begin{itemize}
+    \item ZeroValue: si se lee una celda no inicializada su valor será 0.
+    \item RandomValue: si se lee una celda no inicializada su valor será aleatorio.
+    \item ErrorCellValue: si se lee una celda no inicializada se lanzará un error.
+  \end{itemize}
+  \item DefaultRegisterValue: representa los posibles valores que un registro puede tomar por defecto, es decir, cuando no está incializado. Los posibles valores son:
+  \begin{itemize}
+    \item ZeroValue: si se lee un registro no inicializado su valor será 0.
+    \item RandomValue: si se lee un registro no inicializado su valor será aleatorio.
+  \end{itemize}
+\end{itemize}
+
+\subsection{QConfig}
+\label{subsec:qconfig}
+Existen distintos aspectos en QSim Web que pueden ser configurados con el objetivo de lograr que la herramienta tenga un enfoque más educativo y a su vez, para poder crear subconjuntos del lenguaje. QConfig es la clase encargada de guardar y modificar la configuración elegida.
+Existen las siguientes configuraciones:
+
+\begin{itemize}
+  \item registers\_number: Permite modificar la cantidad de registros entre 1 y 8 (R0-R7). Si se intenta usar un registro deshabilitado, la herramienta arrojará un error especificando lo sucedido.
+  \item mul\_modifies\_r7: Permite elegir si se quiere que los 16 bits más significativos de una multiplicación se guarden en R7 o no. Esto es interesante ya que al principio resulta difícil de entender por los alumnos y que esté habilitado agregaría una complejidad esencial no buscada en los comienzos de la materia.
+  \item default\_value: 
+  \begin{itemize}
+    \item cells: Permite elegir si el valor por defecto de una celda será 0 (cero), un error (si se intenta acceder al valor de una celda no inicializada la herramienta lanzará una excepción personalizada) o aleatorio (todas las celdas de memoria comenzarán con un valor aleatorio, ayudando así a simular que la memoria siempre puede contener “basura” o valores inesperados).
+    \item registers: Permite elegir si el valor por defecto de un registro será 0 (cero) o aleatorio.
+  \end{itemize}
+  \item addresing\_mode: Permite elegir qué modo de direccionamiento estará habilitado en la ejecución. Si se intenta usar un modo de direccionamiento deshabilitado, la herramienta lanzará una excepción indicando lo sucedido. También si se requiere, se puede cargar a mano una configuración especificando el nombre con el que se mostrará el modo de direccionamiento.
+  \item instruction: Misma funcionalidad que la explicada anteriormente con addresing\_mode solo que para las instrucciones. 
+  Por ejemplo, si solo se requiere de Q1, basta con habilitar únicamente las instrucciones MOV, MUL, ADD, SUB y DIV.
+\end{itemize}
+
+\section{Lenguaje Q}
+
+\subsection{Parser}
+El parser es la unidad encargada del analisis sintáctico para determinar si el programa es correcto de acuerdo a la gramática del lenguaje Q. 
+Recibe como entrada una cadena de texto y devolverá objetos javascript en caso de ser la entrada sintacticamente válida o un error en caso 
+contrario. Dicha salida será la entrada del Translator \referencia{subsec:translator}.
+
+Para la definición de la gramática y su análsis sintáctico se utilizó la librería nearley.js, la cual provee una sintaxis para la definición de 
+gramáticas basada en \textit{Extended Backus-Naur Form}. EBNF es un metalenguaje, es decir un lenguaje que permite la construcción de otros 
+lenguajes. 
+
+Para utilizar la librería se genera un archivo de gramática con la extensión .ne, donde se define la idea de instrucción, operando, tipos de 
+instrucción y etiquetas. Luego, dicho archivo se compila a javascript utilizando la librería y esto permite el uso de la gramática en navegadores.
+
+Una vez que la gramática está compilada, se utilizará la clase Parser provista por la librería para ingresar las instrucciones en forma de texto. 
+Si son sintacticamente correctas, se devolverá un objeto preparado para traducirse a las instrucciones del lenguaje Q.
+
+Este diseño que separa la etapa de parseo de la etapa de traducción a las clases del lenguaje permite la utilización de un parser distinto, siempre y cuando
+su salida sea polimorfica con la entrada esperada por el Translator.
+
+Los posibles errores que devolverá son:
+\begin{itemize}
+  \item InvalidInstructionError: cuando se encuentre una instrucción incompleta y aún el parseo de la gramática pueda continuar. 
+  Es decir, no se llegó todavía a un símbolo inválido, sino que el resultado es indeterminado. 
+  Un ejemplo de esto podría ser la cadena de texto siguiente:
+  \begin{center}
+    MOV R0
+  \end{center}
+  La instrucción puede ser válida si se agrega un operando más, pero de momento no lo es.
+  \item ParserError: cuando el parseo realizado por nearley.js no es sintacticamente correcto. Un ejemplo de esto podría ser la cadena de texto siguiente:
+  \begin{center}
+    MOV R0 R9
+  \end{center}
+
+  Como R9 no es un registro válido, la instrucción no es válida sintacticamente.
+\end{itemize}
+
+\subsection{Translator}
+Es la clase encargada de instanciar las instrucciones de la librería, recibiendo como entrada el resultado del parseo. Su propósito es el de permitir
+la utilización de un parser distinto al entregado por la librería.
+
+Expone el siguiente método:
+\begin{itemize}
+  \item translate\_code: recibe un listado de rutinas con instrucciones parseadas y devuelve un listado de rutinas con instrucciones de la librería, ya instanciadas.
+\end{itemize}
+
+Como el translator puede funcionar con un parser ajeno a la librería, se provee un formato para las instrucciones, descripto a continuación:
+
+\begin{itemize}
+  \item Instrucciones con dos operandos
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "label": null,
+    "instruction": {
+      "instruction": "CMP" | "MOV" | "ADD" | "SUB" | "MUL" | "DIV" | "AND" | "OR",
+      "type": "two_operand",
+      "target": Operand,
+      "source": Operand
+    }
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item Instrucciones con un operando origen
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "label": null,
+    "instruction": {
+      "instruction": "CALL" | "JMP",
+      "type": "one_source",
+      "source": Operand
+    }
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item Instrucciones sin operandos
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "label": null,
+    "instruction": {
+      "instruction": "RET",
+      "type": "no_operands"
+    }
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item Instrucciones de salto relativo
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "label": null,
+    "instruction": {
+      "instruction":"JE" | "JNE" | "JLE" | "JG" | "JL" | "JGE" | "JLEU" | "JGU" | "JCS" | "JNEG" | "JVS",
+      "type": "relative_jump",
+      "offset": Label
+    }
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item Instrucciones con un operando destino
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "label": null,
+    "instruction": {
+      "instruction": "NOT",
+      "type": "one_target",
+      "target": Operand
+    }
+  }
+  \end{lstlisting}
+\end{minipage}
+
+A su vez, todas las instrucciones pueden tener una etiqueta asociada, ver el tipo Label descripto abajo.
+
+El tipo Operand utilizado en las instrucciones anteriormente descriptas se detalla a continuación:
+\begin{itemize}
+  \item Register
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "type": "register",
+    "value": 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item Immediate
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "type": "immediate",
+    "value": 0x[a-fA-F0-9]{4}
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item Direct
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "type": "direct",
+    "value": 0x[a-fA-F0-9]{4}
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item Indirect
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "type": "indirect",
+    "value": 0x[a-fA-F0-9]{4}
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{itemize}
+  \item IndirectRegister
+\end{itemize}
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "type": "indirect_register",
+    "value": 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+  }
+  \end{lstlisting}
+\end{minipage}
+
+El tipo Label utilizado en las instrucciones anteriormente descriptas se detalla a continuación:
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "type": "label",
+    "value": string
+  }
+  \end{lstlisting}
+\end{minipage}
+
+
+\begin{itemize}
+  \item Algunos ejemplos
+\end{itemize}
+
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "label": {
+      "type": "label",
+      "value": "ciclo"
+    },
+    "instruction": {
+      "instruction": "CMP",
+      "type": "two_operand",
+      "target": {
+        "type": "register",
+        "value": "1"
+      },
+      "source": {
+        "type": "immediate",
+        "value": "0x0000"
+      }
+    }
+  }
+  \end{lstlisting}
+\end{minipage}
+
+\begin{minipage}{\textwidth} 
+  \begin{lstlisting}[language=json,firstnumber=0]
+  {
+    "label": {
+      "type": "label",
+      "value": "ciclo"
+    },
+    "instruction": {
+      "instruction": "JE",
+      "type": "relative_jump",
+      "offset": {
+        "type": "label",
+        "value": "fin"
+      }
+    }
+  }
+  \end{lstlisting}
+\end{minipage}

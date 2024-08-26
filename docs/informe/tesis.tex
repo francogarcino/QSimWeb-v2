@@ -1,0 +1,181 @@
+\documentclass{article}
+
+%%---------------------------------------------------------------------------%%
+%%	Paquetes
+%%---------------------------------------------------------------------------%%
+\usepackage{amsmath, amsthm}
+\usepackage[spanish,activeacute]{babel}
+\usepackage{wrapfig}
+%\usepackage{a4wide}
+\usepackage[paper=a4paper, left=3cm, right=3cm, top=4.5cm, bottom=3cm, includefoot, centering]{geometry}
+\usepackage{needspace}
+\usepackage{hyperref}
+\usepackage[center]{caption}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{capt-of}
+\usepackage{lastpage}
+\usepackage{afterpage}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{subfig}
+\usepackage[dvipsnames,usenames]{color}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{pdfpages}
+\usepackage[subfigure]{tocloft}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{FFFFFF}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{background},
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+%%---------------------------------------------------------------------------%%
+%%	Opciones
+%%---------------------------------------------------------------------------%%
+
+\parskip    = 11 pt
+\headheight	= 13.1pt
+\pagestyle	{fancy}
+\definecolor{orange}{rgb}{1,0.5,0}
+%\addtolength{\textheight}{-1.5cm}
+
+%%---------------------------------------------------------------------------%%
+%%	Document
+%%---------------------------------------------------------------------------%%
+\begin{document}
+\renewcommand{\partname}{Capítulo}
+\renewcommand{\tablename}{Tabla}
+\input{trans_algorithmic.tex}
+
+\newcommand{\referencia}[1]{(ver ~\ref{#1})}
+%% Redefine the \paragraph command: 
+\makeatletter 
+\renewcommand\paragraph{\@startsection{paragraph}{4}{0mm}% 
+{-\baselineskip}% 
+{0.5\baselineskip}% 
+{\normalfont\bfseries}% 
+}%
+\@addtoreset{figure}{part}
+\@addtoreset{table}{part}
+\@addtoreset{algorithm}{part}
+\@addtoreset{section}{part}
+\makeatother
+\cftsetindents{section}{1em}{2em}
+\cftsetindents{subsection}{2em}{3em}
+\cftsetindents{subsubsection}{3em}{4em}
+\setlength{\cftparskip}{0.2em}
+
+%%---------------------------------------------------------------------------%%
+%% Caratula
+%%---------------------------------------------------------------------------%%
+\includepdf{caratula.pdf}
+
+% Pagina en blanco para imprimir doble faz
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
+\pagestyle{empty}{
+\include{abstract}
+}
+
+\pagestyle{empty}
+{
+\fancypagestyle{plain}
+    {
+    \fancyhead{}
+    \fancyfoot{}
+    \renewcommand{\headrulewidth}{0.0pt}
+    } % clear header and footer of plain page because of ToC
+%\setcounter{tocdepth}{5}
+%\setcounter{secnumdepth}{5}
+
+
+% Pagina en blanco para imprimir doble faz
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
+
+
+\tableofcontents
+}
+
+% Arregla los estilos para el resto del documento, y
+% resetea los numeros de pagina para que queden bien.
+\newpage
+\pagenumbering{arabic}
+\fancypagestyle{plain} {
+    \fancyhead[LO]{Perez, Pissi--Martinez}
+    \fancyhead[C]{}
+    \fancyhead[RO]{P\'agina \thepage\ de \pageref{LastPage}}
+    \fancyfoot{}
+    \renewcommand{\headrulewidth}{0.4pt}
+}
+\pagestyle{plain}
+
+\newenvironment{packed_itemize}{
+\vspace{-0.5cm}
+\begin{itemize}
+\setlength{\itemsep}{1pt}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\renewcommand{\thepart}{\arabic{part}}
+\renewcommand{\thefigure}{\arabic{part}.\arabic{figure}}
+\renewcommand{\thetable}{\arabic{part}.\arabic{table}}
+\renewcommand{\thealgorithm}{\arabic{part}.\arabic{algorithm}}
+\renewcommand{\thesection}{\arabic{part}.\arabic{section}}
+
+\include{agradecimientos}
+
+\include{introduccion}
+\include{interfaz}
+\include{libreria}
+\include{computer}
+\include{accesibilidad}
+\include{devoluciones}
+\include{conclusiones}
+\include{bibliografia}
+
+\label{LastPage}
+\end{document}

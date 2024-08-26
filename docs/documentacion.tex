@@ -1,0 +1,233 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in,footskip=0.25in]{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{FFFFFF}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=4pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{background},
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+
+
+\title{QWeb}
+\author{Francisco Perez Ramos - Pablo Nicolás Pissi}
+\date{}
+\begin{document}
+\maketitle
+
+\section*{Introducción}
+QWeb nace con la idea de poder simular el lenguaje de programación Q, utilizado en la Universidad Nacional de Quilmes. Este simulador es web para evitar todas las complejidades accidentales inherentes a la instalación de herramientas para su uso, como pueden ser compiladores o herramientas específicas de lenguajes.
+El código está escrito enteramente en Javascript y es ejecutado en el navegador por lo que no requiere de servidores una vez que este fue cargado en la computadora cliente.
+
+\section*{Descripción}
+En esta sección se detallan las diferentes partes que componen el simulador y las interacciones entre ellas.
+
+\subsection*{Frontend web}
+
+Se trata del componente desde el cual se puede ejecutar código Q, escrito por el usuario.
+
+Permite escribir en varias líneas el programa que se desea ejecutar, para esto, se dispone de un editor de texto programado para detectar código Q y marcarlo con distintos colores dependiendo de si es una instrucción válida (MOV, add, etc.), un número en hexadecimal de 4 dígitos (0xABCD), una instrucción de ensamblaje ([assemble:]), un registro (R1, r2, etc.) o un comentario marcado con el simbolo numeral (#comentario), sabemos que disponer de un editor que nos marque palabras claves es ideal para no cometer errores previos a la ejecución o detectarlos a tiempo.
+
+Luego este programa podrá ser ejecutado proveyendo una devolución acorde al resultado del programa, si este no tiene errores de sintaxis, o mostrará los errores que la ejecución del programa haya devuelto.
+Permite 3 modos de ejecución:
+
+\begin{enumerate}
+	\item Ejecución total
+	\item Ejecución de a una instrucción
+	\item Ejecución de a una instrucción con detalle
+\end{enumerate}
+
+\subsubsection*{Ejecución total}
+En este modo, la totalidad del programa escrito es ejecutado, es decir, todas las instrucciones que componen al programa son ejecutadas secuencialmente o de acuerdo a la especificación de la misma. Los valores de registros de uso general, registros especiales y memoria son plasmados en la interfaz de usuario de acuerdo a la totalidad del programa.
+
+\subsubsection*{Ejecución de a una instrucción}
+En este modo, se ejecuta una instrucción por cada vez que el usuario lo indique. Los valores mostrados representan el estado de la computadora hasta la instrucción que se haya ejecutado, siendo este acumulado para la siguiente instrucción. Este modo permite ver los efectos de las instrucciones, pudiendo analizarse de a una.
+
+\subsubsection*{Ejecución de a una instrucción con detalle}
+Como QWeb es una herramienta pensada para la enseñanza, este modo permite ver separadas las etapas de Fetch, Decode, Execute por cada instrucción. Es decir, el usuario puede ver los efectos de realizar la búsqueda de la instrucción, luego los efectos de la decodificación y posteriormente de la ejecución para cada una de las instrucciones que componen el programa.
+
+Para obtener los efectos, la ejecución detallada de la clase Computer devuelve un conjunto de efectos que se va llenando a medida que realiza la ejecución. El formato propuesto para estos efectos es el especificado en la clase Action dentro de la libreria qweb: 
+
+\begin{center}
+class Action(name, data)
+\end{center}
+
+A su vez, el frontend web define 7 tipos de Acciones: 
+\begin{itemize}
+\item Assemble
+\item ReadMemory
+\item WriteMemory
+\item ReadRegister
+\item WriteRegister
+\item WriteStack
+\item AssignPC
+\end{itemize}
+
+El tipo Assemble y WriteMemory son en definitiva, el mismo tipo pero en distinto momento del ciclo de instrucción: durante el ensamblado y durante la ejecución respectivamente pero con fines pedagógicos se separaron. Esta separación es configurable mediante la clave \textit{actions\_mode} presente en el archivo config.json.
+
+El tipo WriteStack y WriteMemory son en definitiva, el mismo tipo pero con distintos niveles de detalle: si el \textit{actions\_mode} es ultra-verbose se mostraran las escrituras en pila de manera diferenciada.
+
+Los valores posibles para esta configuración son:
+\begin{itemize}
+\item \textbf{normal}, en este modo las acciones. Assemble y WriteMemory son un mismo tipo de efecto.
+\item \textbf{verbose}, en este modo Assemble y WriteMemory son diferentes tipos de efecto.
+\item \textbf{ultra-verbose}, en este modo Assemble y WriteMemory son diferentes tipos de efecto. Además se diferencian las escrituras a memoria si se tratan de celdas reservadas a la pila y se muestran los cambios en el PC realizados por CALL, RET y JMP.
+\end{itemize}
+
+Para tener un manejo más prolijo del \textit{actions\_mode} se creó la clase ActionMode, la cual relaciona los valores "normal", "verbose", "ultra-verbose" con su respectiva clase.
+
+Las subclases de ActionMode son:
+\begin{itemize}
+\item ActionModeNormal
+\item ActionModeVerbose
+\item ActionModeUltraVerbose
+\end{itemize}
+
+Cada una de ellas define una lista de tipos de acción válidos mediante la función \textit{valid\_action\_types}. 
+Además, como hay tipos de acciones que varian su representacion en la UI según el modo activado, se definieron relaciones entre los tipos cuando es necesario cambiar la representación. Por ejemplo, una acción de tipo \textit{assemble} se mapea a una acción de tipo \textit{write\_memory} si el \textit{actions\_mode} es "normal". Estas relaciones se definen en la función \textit{mappings}.
+
+Es decir, el mecanismo para obtener las acciones a mostrarse en pantalla sería el siguiente:
+\begin{itemize}
+\item Obtengo las acciones de la ejecución.
+\item Mapeo las acciones a sus posibles relaciones basadas en el ActionMode. Si no hay relación valida la acción queda igual.
+\item Filtro las acciones según los tipos de acciones válidos basados en el ActionMode.
+\end{itemize}
+
+Del lado de la UI, si se está usando el modo "ulta-verbose", se muestra paso a paso qué acción se está realizando con un afable pop-up, este desaparece con el tiempo pero de todas formas la información se guarda y se puede acceder en modo de tabla para repasar las acciones si así se requiere.
+
+\subsubsection*{Carga de archivos}
+
+Para facilitar y fomentar la división en rutinas, el frontend cuenta con la posibilidad de manejar varios archivos de código simultaneamente. Estos archivos se pueden cargar desde la computadora del usuario y su contenido se visualiza en la pestaña correspondiente al mismo. Cuando un archivo se agrega, es incluído en la ejecución como un programa único. Permite además cerrar pestañas de archivos para evitar que sean incluidos en la ejecución. \\
+
+Cuenta con 3 validaciones a la hora de cargar archivos: 
+\begin{itemize}
+\item Que un archivo con el mismo nombre no esté cargado actualmente.
+\item Que el tamaño del archivo sea menor a 1Mb.
+\item Que el tipo de archivo sea txt.
+\end{itemize}
+
+\nopagebreak
+\subsection*{Configuraciones de QWeb}
+En QWeb es posible configurar Q de muchas maneras, y esto ayuda a la hora de la enseñanza para poder crear subconjuntos del lenguaje.
+Con estas configuraciones se puede elegir/modificar varios aspectos:
+\begin{itemize}
+\item Elegir qué instrucciones estarán habilitadas. Por ejemplo, si solo se requiere de Q1, basta con habilitar únicamente las instrucciones MOV, MUL, ADD, SUB y DIV.
+\item Elegir qué modos de direccionamiento estarán habilitados.
+\item Elegir la cantidad de registros disponibles (desde R0 a R7)
+\item Modificar el comportamiento al acceder al valor de una celda no inicializada (Devolver cero, un valor aleatorio simulando basura, o un error).
+\item Modificar el comportamiento al acceder al valor de un registro no inicializado (Devolver cero o un valor aleatorio simulando basura).
+\end{itemize}
+Si se deshabilita una instrucción, un modo de direccionamiento o algún registro y se intenta usar, la aplicación lanzará un error dando a entender lo sucedido.
+
+\nopagebreak
+\subsection*{Parser}
+El parser es el componente encargado de la traducción del texto escrito en el Frontend web, en objetos que representan las instrucciones del lenguaje. Su tarea es determinar qué cadenas de texto pueden ser convertidas en instrucciones y que cadenas no. Para hacerlo utlizamos la librería \href{https://nearley.js.org/}{nearley.js} la cual permite escribir la gramática en un archivo con extensión .ne y compilarla a javascript para poder ser usada como un módulo dentro del navegador. \footnote{Se tuvo que modificar la librería para poder usarla con heroku, se subieron esas modificaciones a un repositorio propio y se hizo que la dependencia se instale desde este repositorio en lugar de utilizar el repositorio de npm.}\\
+
+Por ejemplo, la siguiente cadena de texto:
+\begin{center}
+\texttt{ciclo: CMP R1, 0x0000}
+\end{center}
+
+Que representa a una etiqueta ciclo apuntando a la instrucción CMP con los operandos R1 y 0x0000, será parseada de la siguiente forma:
+
+\begin{minipage}{\textwidth} 
+\begin{lstlisting}[language=json,firstnumber=0]
+{
+  "label": {
+  	"type": "label",
+  	"value": "ciclo"
+  },
+  "instruction": {
+    "instruction": "CMP",
+    "type": "two_operand",
+    "target": {
+    	"type": "register",
+    	"value": "1"
+    },
+    "source": {
+    	"type": "immediate",
+    	"value": "0x0000"
+    }
+  }
+}
+\end{lstlisting}
+\end{minipage}
+
+\subsection*{Translator}
+Una vez que el Parser convierte el texto en objetos de javascript, el Translator se encargará de instanciar las instrucciones propiamente del lenguaje, diferenciando etiquetas, instrucciones, subrutinas. Para ello, cuenta con:
+\begin{enumerate}
+	\item Un mapeo entre los tipos de operandos del parser con los modos de direccionamiento de la arquitectura Q.
+	\item Un mapeo entre las instrucciones devueltas por el parser con las instrucciones de la arquitectura Q.
+	\item Un mapeo entre los tipos de instrucciones y la cantidad de parametros y los tipos de los mismos.
+\end{enumerate}
+En resumen, convertirá el json anteriormente descripto, en un objeto de la siguiente forma:
+\begin{center}
+\texttt{new Label("ciclo", new CMP(new Register(1), new Immediate("0x0000")))}
+\end{center}
+Estos objetos, agrupados en rutinas son comprendidos por la representación de la computadora Q y por lo tanto pueden ser ejecutados.
+
+\subsection*{Computer}
+Es la clase principal que representa el funcionamiento de la arquitectura Q. Sus tareas principales son
+\begin{itemize}
+	\item Analizar las etiquetas presentes en el programa y convertirlas a direcciones de memoria o saltos relativos.
+	\item Ensamblar el resultado del analisis de etiquetas
+	\item Ejecutar las instrucciones en memoria hasta que encuetre un fin de ejecución, cambiando su estado.
+\end{itemize}
+
+\subsubsection*{Instrucciones}
+Representas las instrucciones presentes en la arquitectura Q, conteniendo cada clase la definición de cómo se modifica el estado basandose en sus operandos, cuando aplica.
+Ellas son:   
+\begin{center}
+\texttt{MUL, MOV, ADD, SUB, CMP, DIV, CALL, RET, JE, JNE, JLE, JG, JL, JGE, JLEU, JGU, JCS, JNEG, JVS, JMP, AND, OR, NOT}
+\end{center}
+Cada una de estas instrucciones está representada por una clase de javascript. A su vez, cada instrucción sabe como ensamblarse y desensamblarse.
+\subsubsection*{Estado}
+Es la clase que contiene todos los valores que son modificados por la ejecución. En ella se encuentran los registros, la memoria y los flags. Provee metodos para cambiar el estado que son accedidos por los operandos de las instrucciones.
+
+\subsubsection*{Operandos}
+Son los encargados de definir cómo se modifica el estado: 
+\begin{itemize}
+	\item Modo Inmediato: no modifica el estado ya que representa a un valor literal.
+	\item Registro: modifica el registro asociado con su valor, dentro del estado.
+	\item Directo: modifica la dirección de memoria asociada a su valor, dentro del estado.
+	\item Indirecto Registro: modifica la dirección de memoria apuntada por el registro asociado con su valor, dentro del estado.
+	\item Indirecto: modifica la dirección de memoria apuntada por la dirección de memoria asociada a su valor, dentro del estado.
+\end{itemize}
+Cada uno de estos operandos está representado por una clase de javascript. A su vez, cada operando sabe como ensamblarse y desensamblarse.
+\end{document}
