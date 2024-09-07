@@ -29,7 +29,7 @@ import ExecutionButton from './ExecutionButton.js';
 import { isMobile } from 'react-device-detect';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
-import { ResultTitle } from '../ResultTitle.js';
+import { ResultTitle } from '../ui/ResultTitle.js';
 
 const useStyles = makeStyles((theme) => ({
   root: {

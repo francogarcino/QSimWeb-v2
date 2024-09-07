@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import MenuAppBar from './AppBar'
+import MenuAppBar from './ui/AppBar.js'
 import CodeExecutor from './arch-views/CodeExecutor'
 import { green } from '@material-ui/core/colors';
 import { SnackbarProvider } from 'notistack';
