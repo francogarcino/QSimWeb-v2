@@ -1,35 +1,35 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { TextField, Grid, Paper, Box, Typography, useTheme } from '@material-ui/core';
-import computer from './qweb/qcomputer'
-import Registers from './Registers'
-import PaginationTable from './PaginationTable'
-import FlagsPreview from './FlagsPreview'
-import Memory from './Memory'
-import translator from './qweb/language/translator'
-import parser from './qweb/language/parser'
+import computer from '../qweb/qcomputer.js'
+import Registers from './Registers.js'
+import PaginationTable from './PaginationTable.js'
+import FlagsPreview from './FlagsPreview.js'
+import Memory from './Memory.js'
+import translator from '../qweb/language/translator.js'
+import parser from '../qweb/language/parser.js'
 import { ImmediateAsTarget, DisabledInstructionError, DisabledRegisterError, DivideByZeroError, 
   UndefinedCellValueError, UndefinedLabel, DisabledAddressingModeError, IncompleteRoutineError, 
-  EmptyStackError } from './qweb/exceptions'
+  EmptyStackError } from '../qweb/exceptions.js'
 import FlashOnIcon from '@material-ui/icons/FlashOn';
 import FlashAutoIcon from '@material-ui/icons/FlashAuto';
 import OfflineBolt from '@material-ui/icons/OfflineBolt';
 import { useSnackbar } from 'notistack';
-import { ActionType } from './action-type';
-import { toHexa, hexa, getDetails } from './utils';
+import { ActionType } from '../action-type.js';
+import { toHexa, hexa, getDetails } from '../utils.js';
 import AceEditor from "react-ace";
-import AceModeQWeb from "./AceModeQWeb.js";
+import AceModeQWeb from "../editor/AceModeQWeb.js";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-tomorrow";
 import FileSaver from 'file-saver';
-import { ActionMode } from './action-mode';
-import qConfig from './qweb/qConfig';
-import { useTabs } from './CodeTabs';
-import ExecutionButton from './ExecutionButton';
+import { ActionMode } from '../action-mode.js';
+import qConfig from '../qweb/qConfig.js';
+import { useTabs } from '../editor/CodeTabs.js';
+import ExecutionButton from './ExecutionButton.js';
 import { isMobile } from 'react-device-detect';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
-import { ResultTitle } from './ResultTitle';
+import { ResultTitle } from '../ResultTitle.js';
 
 const useStyles = makeStyles((theme) => ({
   root: {

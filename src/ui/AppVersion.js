@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography, makeStyles } from '@material-ui/core'
-import packageJSON from '../package.json'
+import packageJSON from '../../package.json'
 
 const useStyles = makeStyles((theme) => (
   {

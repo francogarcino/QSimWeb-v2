@@ -13,10 +13,10 @@ import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Tooltip from '@material-ui/core/Tooltip';
-import computer from './qweb/qcomputer'
-import { FileValidator, configFormFileValidators } from './FileValidator'
+import computer from '../qweb/qcomputer'
+import { FileValidator, configFormFileValidators } from '../FileValidator'
 import { useSnackbar } from 'notistack';
-import qConfig from './qweb/qConfig'
+import qConfig from '../qweb/qConfig'
 import { FormGroup } from '@material-ui/core';
 import Switch from '@material-ui/core/Switch';
 import { isMobile } from 'react-device-detect';

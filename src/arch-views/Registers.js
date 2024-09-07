@@ -1,6 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import TableItem from './TableItem';
+import TableItem from '../TableItem';
 
 const useStyles = makeStyles((theme) => ({
   root: {
