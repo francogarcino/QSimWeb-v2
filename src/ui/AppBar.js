@@ -5,7 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import ConfigForm from './ConfigForm'
-import QSimWebLogo from './images/qsimweb_t.png'
+import QSimWebLogo from '../images/qsimweb_t.png'
 import WbIncandescentIcon from '@material-ui/icons/WbIncandescent';
 import WbIncandescentOutlinedIcon from '@material-ui/icons/WbIncandescentOutlined';
 import { Tooltip } from '@material-ui/core';

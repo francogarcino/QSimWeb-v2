@@ -5,7 +5,7 @@ import CloseOutlinedIcon from '@material-ui/icons/CloseOutlined';
 import GetApp from '@material-ui/icons/GetApp';
 import FileSaver from 'file-saver';
 import { useSnackbar } from 'notistack';
-import { FileValidator, codeTabsFileValidators } from './FileValidator'
+import { FileValidator, codeTabsFileValidators } from '../FileValidator'
 
 const useStyles = makeStyles((theme) => ({
   tab: {

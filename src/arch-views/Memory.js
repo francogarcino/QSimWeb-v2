@@ -7,8 +7,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import { dec2hex } from './qweb/helper'
-import { hexa } from './utils';
+import { dec2hex } from '../qweb/helper'
+import { hexa } from '../utils';
 
 
 const useStyles = makeStyles({
