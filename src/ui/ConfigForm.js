@@ -219,21 +219,6 @@ export default function ConfigForm({ open, setOpen }) {
               control={<Switch checked={mulModifiesR7} onChange={mulModifiesR7HandleChange} size="medium" name="mulModifiesR7" color="primary" />}
             />
           </FormControl>
-          <FormControl component="fieldset" className={classes.margin}>
-            <FormLabel component="legend" >Cantidad de registros:</FormLabel><br/>
-            <Slider
-              value={registersCount}
-              id="registers_number"
-              aria-labelledby="discrete-slider"
-              valueLabelDisplay="auto"
-              onChange={registersNumberChange}
-              step={1}
-              marks
-              min={1}
-              max={8}
-            />
-          </FormControl>
-
           <FormControl component="fieldset">
             <FormLabel component="legend">Valor por defecto de un registro sin inicializar:</FormLabel>
             <RadioGroup row aria-label="valor por defecto registro" name="valor por defecto registro">
