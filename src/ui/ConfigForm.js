@@ -162,6 +162,7 @@ export default function ConfigForm({ open, setOpen }) {
         id={id}
         checked={enabled}
         color="primary"
+        disabled={true}
         onChange={instructionHandleChange}
         name={id} />}
       label={label}
