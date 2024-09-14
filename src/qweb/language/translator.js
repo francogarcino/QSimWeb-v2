@@ -5,117 +5,117 @@ import labels from '../labels'
 const rules = {
   instructions: [
     {
-      name: 'mov',
+      name: 'MOV',
       type: 'two_operand',
       value: Instructions.MOV
     },
     {
-      name: 'add',
+      name: 'ADD',
       type: 'two_operand',
       value: Instructions.ADD
     },
     {
-      name: 'sub',
+      name: 'SUB',
       type: 'two_operand',
       value: Instructions.SUB
     },
     {
-      name: 'mul',
+      name: 'MUL',
       type: 'two_operand',
       value: Instructions.MUL
     },
     {
-      name: 'cmp',
+      name: 'CMP',
       type: 'two_operand',
       value: Instructions.CMP
     },
     {
-      name: 'div',
+      name: 'DIV',
       type: 'two_operand',
       value: Instructions.DIV
     },
     {
-      name: 'and',
+      name: 'AND',
       type: 'two_operand',
       value: Instructions.AND
     },
     {
-      name: 'or',
+      name: 'OR',
       type: 'two_operand',
       value: Instructions.OR
     },
     {
-      name: 'call',
+      name: 'CALL',
       type: 'one_source',
       value: Instructions.CALL
     },
     {
-      name: 'jmp',
+      name: 'JMP',
       type: 'one_source',
       value: Instructions.JMP
     },
     {
-      name: 'ret',
+      name: 'RET',
       type: 'no_operands',
       value: Instructions.RET
     },
     {
-      name: 'not',
+      name: 'NOT',
       type: 'one_target',
       value: Instructions.NOT
     },
     {
-      name: 'je',
+      name: 'JE',
       type: 'relative_jump',
       value: Instructions.JE
     },
     {
-      name: 'jne',
+      name: 'JNE',
       type: 'relative_jump',
       value: Instructions.JNE
     },
     {
-      name: 'jle',
+      name: 'JLE',
       type: 'relative_jump',
       value: Instructions.JLE
     },
     {
-      name: 'jg',
+      name: 'JG',
       type: 'relative_jump',
       value: Instructions.JG
     },
     {
-      name: 'jl',
+      name: 'JL',
       type: 'relative_jump',
       value: Instructions.JL
     },
     {
-      name: 'jge',
+      name: 'JGE',
       type: 'relative_jump',
       value: Instructions.JGE
     },
     {
-      name: 'jleu',
+      name: 'JLEU',
       type: 'relative_jump',
       value: Instructions.JLEU
     },
     {
-      name: 'jgu',
+      name: 'JGU',
       type: 'relative_jump',
       value: Instructions.JGU
     },
     {
-      name: 'jcs',
+      name: 'JCS',
       type: 'relative_jump',
       value: Instructions.JCS
     },
     {
-      name: 'jneg',
+      name: 'JNEG',
       type: 'relative_jump',
       value: Instructions.JNEG
     },
     {
-      name: 'jvs',
+      name: 'JVS',
       type: 'relative_jump',
       value: Instructions.JVS
     }
@@ -208,7 +208,7 @@ class Translator {
 
   get_instruction(parsed_line) {
     return this.rules.instructions.find(i =>
-      i.name === parsed_line.instruction.toLowerCase() &&
+      i.name === parsed_line.instruction &&
       i.type === parsed_line.type).value
   }
 
