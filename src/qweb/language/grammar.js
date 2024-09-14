@@ -6,7 +6,7 @@ function id(x) { return x[0]; }
 
 const invalidlabels = [
                 /^R[0-7]$/gi,
-                /^0x[0-9a-f]{4}$/gi,
+                /^0x[0-9a-fA-F]{4}$/gi,
                 /^(MOV|ADD|OR|AND|SUB|MUL|DIV|CMP|CALL|JMP|RET|JE|JNE|JLE|JG|JL|JGE|JLEU|JGU|JCS|JNEG|JVS|NOT)$/gi,
                 ]
 grammar = {
@@ -38,7 +38,7 @@ grammar = {
     {"name": "Instruction", "symbols": ["InstructionT4"]},
     {"name": "Instruction", "symbols": ["InstructionT5"]},
     {"name": "Instruction", "symbols": ["InstructionT6"]},
-    {"name": "InstructionT1$ebnf$1", "symbols": [/["," | _]/]},
+    {"name": "InstructionT1$ebnf$1", "symbols": [/[","]/]},
     {"name": "InstructionT1$ebnf$1", "symbols": ["InstructionT1$ebnf$1", /["," | _]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "InstructionT1", "symbols": ["OperationT1", "_", "Operand", "InstructionT1$ebnf$1", "Operand"], "postprocess": 
         function ([[instruction], _, [target], __, [source]]) {
