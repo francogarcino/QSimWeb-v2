@@ -144,16 +144,27 @@ export default function CodeExecutor() {
   function parse_code(codeToParse) {
     try {
       setAceEditorErrors([])
-      const parsed_code = parser.parse_code(codeToParse)
-      setResult('')
-      return parsed_code
+      let result = ''
+      const { routines, errors } = parser.parse_code(codeToParse)
+      if (errors.length > 0) {
+        errors.forEach(e => {addError(e.error)
+        result += `\n${e.error.message}`})
+      }
+      setResult(result)
+      return routines
     }
     catch (e) {
-      setAceEditorErrors([{ row: e.line, column: Math.random(), type: 'error', text: e.shorterMessage }])
+      addError(e)
       setResult(e.message)
     }
   }
 
+  const addError = (e) => {
+    setAceEditorErrors(prevErrors => [
+      ...prevErrors,
+      { row: e.line, column: Math.random(), type: 'error', text: e.shorterMessage }
+    ]);
+  };
   function execute_cycle() {
     try {
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION)
