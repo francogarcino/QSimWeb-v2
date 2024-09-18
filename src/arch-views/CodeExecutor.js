@@ -30,6 +30,7 @@ import { isMobile } from 'react-device-detect';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
 import { ResultTitle } from '../ui/ResultTitle.js';
+import '../App.css';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -84,6 +85,7 @@ export default function CodeExecutor() {
   const [historicActions, setHistoricActions] = useState([])
   const [aceEditorHeight, setAceEditorHeight] = useState(window.innerHeight - (isMobile ? 100 : 150) + 'px')
   const [aceEditorErrors, setAceEditorErrors] = useState([])
+  const [aceEditorMarkers, setAceEditorMarkers] = useState([])
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const classes = useStyles();
   const [TabsCode, tabs, code, setCode] = useTabs()
@@ -144,27 +146,75 @@ export default function CodeExecutor() {
   function parse_code(codeToParse) {
     try {
       setAceEditorErrors([])
-      let result = ''
+      setAceEditorMarkers([])
       const { routines, errors } = parser.parse_code(codeToParse)
-      if (errors.length > 0) {
-        errors.forEach(e => {addError(e.error)
-        result += `\n${e.error.message}`})
+      addErrors(errors)
+      const hasErrors = errors.some(e => e && e.error);
+      if(!hasErrors) {
+        return routines
       }
-      setResult(result)
-      return routines
     }
     catch (e) {
       addError(e)
       setResult(e.message)
     }
   }
+  function addErrors(errors) {
+    const { result } = errors.reduce((acc, e, index) => {
+      const newResult = e == null ? acc.result : acc.result + `\n${e.error.message}`;
+      addError(e, acc.lastError, index);
+      return {
+        result: newResult,
+        lastError: e,
+        index: index + 1
+      };
+    }, { result: '', lastError: null, index: 0 });
+    
+    setResult(result);
+  }
+  
+  const addError = (e, ePrev, index) => {
+    if (e && e.error) {
+      setAceEditorErrors(prevErrors => [
+        ...prevErrors,
+        { 
+          row: e.error.line, 
+          column: Math.random(), 
+          type: 'error', 
+          text: e.error.shorterMessage 
+        }
+      ]);
+  
+      setAceEditorMarkers(prevMarkers => {
+        const lastMarker = prevMarkers.length > 0 ? prevMarkers[prevMarkers.length - 1] : null;
+        const lineWithOffset = !lastMarker && !ePrev && index !== 0 
+          ? e.error.line
+          : lastMarker && ePrev
+          ? e.error.line - lastMarker.startRow + 1
+          : lastMarker && !ePrev
+          ? e.error.line - lastMarker.startRow
+          : 999999;
 
-  const addError = (e) => {
-    setAceEditorErrors(prevErrors => [
-      ...prevErrors,
-      { row: e.line, column: Math.random(), type: 'error', text: e.shorterMessage }
-    ]);
+          const editor = aceEditorRef.current.editor; 
+          const lineText = editor.getSession().getLine(e.error.line);
+          const endCol = lineText.length;  
+
+        return [
+          ...prevMarkers,
+          {
+            startRow: lineWithOffset,
+            startCol: 0,
+            endRow: lineWithOffset,
+            endCol: endCol,
+            className: 'error-highlight',
+            type: 'text',
+            inFront: true
+          }
+        ];
+      });
+    }
   };
+ 
   function execute_cycle() {
     try {
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION)
@@ -350,6 +400,7 @@ export default function CodeExecutor() {
               height={aceEditorHeight} //TODO: Find a better way to set the height
               width={aceEditorHeight}
               annotations={aceEditorErrors}
+              markers={aceEditorMarkers} 
               editorProps={{ $blockScrolling: true }}
               fontSize={20}
               focus={true}

@@ -36,3 +36,17 @@
     transform: rotate(360deg);
   }
 }
+
+.error-highlight {
+  position: relative;
+  border-bottom: 1px solid red;
+}
+.wavy-underline {
+  position: relative;
+  border-bottom: 2px solid red; 
+  border-bottom-style: wavy;
+  text-decoration-style: wavy;
+  text-decoration-line: underline; 
+  text-decoration-color: red;
+  /* Cambia el color según tu necesidad */
+}

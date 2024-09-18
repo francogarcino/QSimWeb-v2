@@ -26,21 +26,23 @@ class Parser {
 
   parse_code(codeToParse) {
     let assembly_cell = '0000'
-    let errors = []
     //TODO: agregar un chequeo de que si codeToParse es '' lance una Exception 
     //
-    return codeToParse.split(/\r\n|\r|\n/).reduce((routines, line, index) => {
+    return codeToParse.split(/\r\n|\r|\n/).reduce((acc, line, index) => {
+      let { routines, errors } = acc;
       line = line.includes('#') ? line.slice(0, line.indexOf('#')) : line //Delete comments
       
-      if (!line) return routines
+      if (!line) return acc
       try {
         const parsed_instruction = this.parse_line(line, index)
         if (parsed_instruction.instruction.assembleIn) {
           assembly_cell = parsed_instruction.instruction.assembleIn.value.slice(2)
           routines.push(new Routine(assembly_cell))
+          errors.push(null)
         }
         else {
           routines[routines.length - 1].add_instruction(parsed_instruction)
+          errors.push(null)
         }
       }
       catch (error) {
@@ -48,7 +50,7 @@ class Parser {
       }
       
       return { routines, errors }; 
-    }, [new Routine(assembly_cell)])
+    }, { routines: [new Routine(assembly_cell)], errors: [] })
   }
 
 }
