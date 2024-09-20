@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
   results: {
-    fontFamily: 'mono'
+    fontFamily: 'monospace'
   },
   fab: (isMobile ? {
     position: 'absolute',
