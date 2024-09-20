@@ -1,5 +1,6 @@
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/ext-language_tools"
+import qConfig from "../qweb/qConfig";
 
 // Se configura que textos se deben resaltar en color, indicando que son validos como programa
 export class CustomHighlightRules extends window.ace.acequire(
@@ -64,13 +65,20 @@ export default class CustomSqlMode extends window.ace.acequire("ace/mode/python"
 }
 
 export class CustomCompleter {
+  wordList = ["ADD", "AND"];
   getCompletions(editor, session, pos, prefix, callback) {
-    var wordList = ["ADD", "AND"];
+    var instrucciones = qConfig.getItem("instruction")
     if (prefix === prefix.toUpperCase()) {
-      callback(null, wordList.map(function(word) {
+      var active = this.wordList.filter(word => {
+        return instrucciones.some(i =>  {
+          return i.name === word && i.enabled
+        });
+      });
+
+      callback(null, active.map(suggest => {
         return {
-          caption: word,
-          value: word,
+          caption: suggest,
+          value: suggest,
           meta: "static"
         };
       }));
