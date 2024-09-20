@@ -92,8 +92,6 @@ export default function CodeExecutor() {
   const actionMode = qConfig.getItem('actions_mode')
   const CurrentActionMode = useMemo(() => ActionMode.find_modeclass(actionMode), [actionMode])
   const [currentExecutionMode, setCurrentExecutionMode] = useState(EXECUTION_MODE_NORMAL)
-  const [lastStartRow, setLastStartRow] = useState(0);
-  const lastErrorIndexRef = useRef(-1);
 
   function load_program(routines) {
     computer.load_many(routines)
@@ -153,14 +151,13 @@ export default function CodeExecutor() {
       addErrors(errors)
       const hasErrors = errors.some(e => e && e.error);
       
-      console.log(aceEditorMarkers)
       if(!hasErrors) {
         return routines
       }
     }
     catch (e) {
-      addError(e)
-      setResult(e.message)
+      //addError(e)
+      //setResult(e.message)
     }
   }
   function addErrors(errors) {
@@ -168,7 +165,7 @@ export default function CodeExecutor() {
     const { result } = errors.reduce((acc, e) => {
       const { result } = acc;
   
-      const newResult = e && e.error ? `${result}\n${e.error.message}` : result;
+      const newResult = `${result}\n${e.error.message}`
       
       addError(e, session);
   
