@@ -164,47 +164,23 @@ export default function CodeExecutor() {
     }
   }
   function addErrors(errors) {
-    const firstLineIsError = errors[0].line === 0
-    const { result } = errors.reduce((acc, e, index) => {
-      const { result, lastError } = acc;
+    const session = aceEditorRef.current.editor.session;
+    const { result } = errors.reduce((acc, e) => {
+      const { result } = acc;
   
       const newResult = e && e.error ? `${result}\n${e.error.message}` : result;
       
-      const editor = aceEditorRef.current.editor;
-      addError(e, lastError, editor, firstLineIsError);
+      addError(e, session);
   
       return {
         result: newResult,
         lastError: e
       };
     }, { result: '', lastError: null });
-    lastErrorIndexRef.current = -1
     setResult(result);
   }
   
-  const addError = (e, ePrev, editor, firstLineIsError) => {
-    const actualErrorIndex = e.error.line
-    var indexOffset = 0
-    if(firstLineIsError) {
-      indexOffset = actualErrorIndex === lastErrorIndexRef.current + 1 
-                        ? 0 
-                        : actualErrorIndex > (actualErrorIndex - lastErrorIndexRef.current) ? (actualErrorIndex - lastErrorIndexRef.current + 1)
-                        : (actualErrorIndex - lastErrorIndexRef.current - 1)
-    }
-    else {
-      indexOffset = actualErrorIndex === lastErrorIndexRef.current + 1 
-                        ? 0 
-                        : !ePrev 
-                        ? e.error.line
-                        : actualErrorIndex - lastErrorIndexRef.current > 2 ? (actualErrorIndex - lastErrorIndexRef.current + 1)
-                        : (actualErrorIndex - lastErrorIndexRef.current)
-    }
-    lastErrorIndexRef.current = actualErrorIndex
-    if (!e || !e.error) {
-      setLastStartRow(lastStartRow + 1)
-      return;
-    }
-  
+  const addError = (e, session) => {  
     setAceEditorErrors(prevErrors => [
       ...prevErrors,
       {
@@ -216,33 +192,20 @@ export default function CodeExecutor() {
     ]);
   
     setAceEditorMarkers(prevMarkers => {
-      const lastMarker = prevMarkers.length > 0 ? prevMarkers[prevMarkers.length - 1] : null;
-  
-      const lineWithOffset = lastMarker && !ePrev
-        ? lastStartRow + 1
-        : lastMarker
-        ? 0
-        : e.error.line;
-      setLastStartRow(0)
-      var mySession = editor.session.getDocument();
-      const session = editor.getSession();
-      const lastLineIndex = session.getLength() - 1;  // Get the index of the last line
-      const lastLine = session.getLine(lastLineIndex);
-      const lineText = editor.getSession().getLine(e.error.line);
-      const endCol = lineText.length;
-      return [
+        const lineLength = session.getLine(e.error.line).length;
+        return [
         ...prevMarkers,
         {
-          startRow: indexOffset,
-          startCol: 0,
-          endRow: indexOffset,
-          endCol: endCol,
+          startRow: e.error.line,
+          startCol: e.error.index,
+          endRow: e.error.line,
+          endCol: lineLength,
           className: 'error-highlight',
           type: 'text',
           inFront: true
         }
-      ];
-    });
+      ]
+  });
   };
   
  

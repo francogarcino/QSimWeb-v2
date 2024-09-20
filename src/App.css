@@ -38,7 +38,7 @@
 }
 
 .error-highlight {
-  position: relative;
+  position: absolute;
   border-bottom: 1px solid red;
 }
 .wavy-underline {
