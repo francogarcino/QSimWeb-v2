@@ -38,11 +38,11 @@ class Parser {
         if (parsed_instruction.instruction.assembleIn) {
           assembly_cell = parsed_instruction.instruction.assembleIn.value.slice(2)
           routines.push(new Routine(assembly_cell))
-          errors.push(null)
+          //errors.push(null)
         }
         else {
           routines[routines.length - 1].add_instruction(parsed_instruction)
-          errors.push(null)
+          //errors.push(null)
         }
       }
       catch (error) {

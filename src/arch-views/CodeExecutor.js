@@ -92,6 +92,8 @@ export default function CodeExecutor() {
   const actionMode = qConfig.getItem('actions_mode')
   const CurrentActionMode = useMemo(() => ActionMode.find_modeclass(actionMode), [actionMode])
   const [currentExecutionMode, setCurrentExecutionMode] = useState(EXECUTION_MODE_NORMAL)
+  const [lastStartRow, setLastStartRow] = useState(0);
+  const lastErrorIndexRef = useRef(-1);
 
   function load_program(routines) {
     computer.load_many(routines)
@@ -150,6 +152,8 @@ export default function CodeExecutor() {
       const { routines, errors } = parser.parse_code(codeToParse)
       addErrors(errors)
       const hasErrors = errors.some(e => e && e.error);
+      
+      console.log(aceEditorMarkers)
       if(!hasErrors) {
         return routines
       }
@@ -160,60 +164,87 @@ export default function CodeExecutor() {
     }
   }
   function addErrors(errors) {
+    const firstLineIsError = errors[0].line === 0
     const { result } = errors.reduce((acc, e, index) => {
-      const newResult = e == null ? acc.result : acc.result + `\n${e.error.message}`;
-      addError(e, acc.lastError, index);
+      const { result, lastError } = acc;
+  
+      const newResult = e && e.error ? `${result}\n${e.error.message}` : result;
+      
+      const editor = aceEditorRef.current.editor;
+      addError(e, lastError, editor, firstLineIsError);
+  
       return {
         result: newResult,
-        lastError: e,
-        index: index + 1
+        lastError: e
       };
-    }, { result: '', lastError: null, index: 0 });
-    
+    }, { result: '', lastError: null });
+    lastErrorIndexRef.current = -1
     setResult(result);
   }
   
-  const addError = (e, ePrev, index) => {
-    if (e && e.error) {
-      setAceEditorErrors(prevErrors => [
-        ...prevErrors,
-        { 
-          row: e.error.line, 
-          column: Math.random(), 
-          type: 'error', 
-          text: e.error.shorterMessage 
-        }
-      ]);
-  
-      setAceEditorMarkers(prevMarkers => {
-        const lastMarker = prevMarkers.length > 0 ? prevMarkers[prevMarkers.length - 1] : null;
-        const lineWithOffset = !lastMarker && !ePrev && index !== 0 
-          ? e.error.line
-          : lastMarker && ePrev
-          ? e.error.line - lastMarker.startRow + 1
-          : lastMarker && !ePrev
-          ? e.error.line - lastMarker.startRow
-          : 999999;
-
-          const editor = aceEditorRef.current.editor; 
-          const lineText = editor.getSession().getLine(e.error.line);
-          const endCol = lineText.length;  
-
-        return [
-          ...prevMarkers,
-          {
-            startRow: lineWithOffset,
-            startCol: 0,
-            endRow: lineWithOffset,
-            endCol: endCol,
-            className: 'error-highlight',
-            type: 'text',
-            inFront: true
-          }
-        ];
-      });
+  const addError = (e, ePrev, editor, firstLineIsError) => {
+    const actualErrorIndex = e.error.line
+    var indexOffset = 0
+    if(firstLineIsError) {
+      indexOffset = actualErrorIndex === lastErrorIndexRef.current + 1 
+                        ? 0 
+                        : actualErrorIndex > (actualErrorIndex - lastErrorIndexRef.current) ? (actualErrorIndex - lastErrorIndexRef.current + 1)
+                        : (actualErrorIndex - lastErrorIndexRef.current - 1)
     }
+    else {
+      indexOffset = actualErrorIndex === lastErrorIndexRef.current + 1 
+                        ? 0 
+                        : !ePrev 
+                        ? e.error.line
+                        : actualErrorIndex - lastErrorIndexRef.current > 2 ? (actualErrorIndex - lastErrorIndexRef.current + 1)
+                        : (actualErrorIndex - lastErrorIndexRef.current)
+    }
+    lastErrorIndexRef.current = actualErrorIndex
+    if (!e || !e.error) {
+      setLastStartRow(lastStartRow + 1)
+      return;
+    }
+  
+    setAceEditorErrors(prevErrors => [
+      ...prevErrors,
+      {
+        row: e.error.line,
+        column: Math.random(),
+        type: 'error',
+        text: e.error.shorterMessage
+      }
+    ]);
+  
+    setAceEditorMarkers(prevMarkers => {
+      const lastMarker = prevMarkers.length > 0 ? prevMarkers[prevMarkers.length - 1] : null;
+  
+      const lineWithOffset = lastMarker && !ePrev
+        ? lastStartRow + 1
+        : lastMarker
+        ? 0
+        : e.error.line;
+      setLastStartRow(0)
+      var mySession = editor.session.getDocument();
+      const session = editor.getSession();
+      const lastLineIndex = session.getLength() - 1;  // Get the index of the last line
+      const lastLine = session.getLine(lastLineIndex);
+      const lineText = editor.getSession().getLine(e.error.line);
+      const endCol = lineText.length;
+      return [
+        ...prevMarkers,
+        {
+          startRow: indexOffset,
+          startCol: 0,
+          endRow: indexOffset,
+          endCol: endCol,
+          className: 'error-highlight',
+          type: 'text',
+          inFront: true
+        }
+      ];
+    });
   };
+  
  
   function execute_cycle() {
     try {
