@@ -18,7 +18,7 @@ import { useSnackbar } from 'notistack';
 import { ActionType } from '../action-type.js';
 import { toHexa, hexa, getDetails } from '../utils.js';
 import AceEditor from "react-ace";
-import AceModeQWeb from "../editor/AceModeQWeb.js";
+import AceModeQWeb, {CustomCompleter} from "../editor/AceModeQWeb.js";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-tomorrow";
 import FileSaver from 'file-saver';
@@ -291,6 +291,7 @@ export default function CodeExecutor() {
   useEffect(() => {
     const customMode = new AceModeQWeb();
     aceEditorRef.current.editor.getSession().setMode(customMode);
+    aceEditorRef.current.editor.completers = [new CustomCompleter()]
   }, [])
 
   useEffect(() => {

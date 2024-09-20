@@ -1,4 +1,5 @@
 import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/ext-language_tools"
 
 // Se configura que textos se deben resaltar en color, indicando que son validos como programa
 export class CustomHighlightRules extends window.ace.acequire(
@@ -59,5 +60,20 @@ export default class CustomSqlMode extends window.ace.acequire("ace/mode/python"
   constructor() {
     super();
     this.HighlightRules = CustomHighlightRules;
+  }
+}
+
+export class CustomCompleter {
+  getCompletions(editor, session, pos, prefix, callback) {
+    var wordList = ["ADD", "AND"];
+    if (prefix === prefix.toUpperCase()) {
+      callback(null, wordList.map(function(word) {
+        return {
+          caption: word,
+          value: word,
+          meta: "static"
+        };
+      }));
+    }
   }
 }
