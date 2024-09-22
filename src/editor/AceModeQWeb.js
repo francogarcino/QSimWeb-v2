@@ -65,21 +65,46 @@ export default class CustomSqlMode extends window.ace.acequire("ace/mode/python"
 }
 
 export class CustomCompleter {
-  wordList = ["ADD", "AND"];
+  suggests = [
+    {"instruction": "MOV", "description": "copia el valor"},
+    {"instruction": "ADD", "description": ""},
+    {"instruction": "SUB", "description": ""},
+    {"instruction": "DIV", "description": "división sin resto"},
+    {"instruction": "MUL", "description": "modifica R7 siempre"},
+
+    {"instruction": "CALL", "description": "invoca la rutina indicada"},
+    {"instruction": "RET", "description": "marca el fin de una rutina"},
+
+    {"instruction": "CMP", "description": "modifica los flags"},
+    {"instruction": "JMP", "description": ""},
+    {"instruction": "JE", "description": "si son iguales"},
+    {"instruction": "JNE", "description": "si no son iguales"},
+    {"instruction": "JLE", "description": "si es menor o igual"},
+    {"instruction": "JG", "description": "si es mayor"},
+    {"instruction": "JL", "description": "si es menor estricto"},
+    {"instruction": "JGE", "description": "si es mayor o igual"},
+    {"instruction": "JLEU", "description": "JLE, pero en BSS"},
+    {"instruction": "JGU", "description": "JG, pero en BSS"},
+    {"instruction": "JCS", "description": "JL, pero en BSS"},
+    {"instruction": "JNEG", "description": "si se activa Negativo"},
+    {"instruction": "JVS", "description": "si se activa Overflow"},
+
+    {"instruction": "NOT", "description": ""},
+    {"instruction": "AND", "description": ""},
+    {"instruction": "OR", "description": ""}
+  ];
   getCompletions(editor, session, pos, prefix, callback) {
     var instrucciones = qConfig.getItem("instruction")
     if (prefix === prefix.toUpperCase()) {
-      var active = this.wordList.filter(word => {
-        return instrucciones.some(i =>  {
-          return i.name === word && i.enabled
-        });
+      var active = this.suggests.filter(valid_suggestions => {
+        return instrucciones.some(i =>  { return i.name === valid_suggestions.instruction && i.enabled });
       });
 
-      callback(null, active.map(suggest => {
+      callback(null, active.map(suggestion => {
         return {
-          caption: suggest,
-          value: suggest,
-          meta: "static"
+          caption: suggestion.instruction,
+          value: suggestion.instruction,
+          meta: suggestion.description || "instrucción"
         };
       }));
     }
