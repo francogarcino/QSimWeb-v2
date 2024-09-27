@@ -30,13 +30,14 @@ import { isMobile } from 'react-device-detect';
 import Button from '@material-ui/core/Button';
 import CloseIcon from '@material-ui/icons/Close';
 import { ResultTitle } from '../ui/ResultTitle.js';
+import '../App.css';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
   },
   results: {
-    fontFamily: 'mono'
+    fontFamily: 'monospace'
   },
   fab: (isMobile ? {
     position: 'absolute',
@@ -84,6 +85,7 @@ export default function CodeExecutor() {
   const [historicActions, setHistoricActions] = useState([])
   const [aceEditorHeight, setAceEditorHeight] = useState(window.innerHeight - (isMobile ? 100 : 150) + 'px')
   const [aceEditorErrors, setAceEditorErrors] = useState([])
+  const [aceEditorMarkers, setAceEditorMarkers] = useState([])
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const classes = useStyles();
   const [TabsCode, tabs, code, setCode] = useTabs()
@@ -144,16 +146,66 @@ export default function CodeExecutor() {
   function parse_code(codeToParse) {
     try {
       setAceEditorErrors([])
-      const parsed_code = parser.parse_code(codeToParse)
-      setResult('')
-      return parsed_code
+      setAceEditorMarkers([])
+      const { routines, errors } = parser.parse_code(codeToParse)
+      addErrors(errors)
+      const hasErrors = errors.some(e => e && e.error);
+      
+      if(!hasErrors) {
+        return routines
+      }
     }
     catch (e) {
-      setAceEditorErrors([{ row: e.line, column: Math.random(), type: 'error', text: e.shorterMessage }])
-      setResult(e.message)
+      //addError(e)
+      //setResult(e.message)
     }
   }
-
+  function addErrors(errors) {
+    const session = aceEditorRef.current.editor.session;
+    const { result } = errors.reduce((acc, e) => {
+      const { result } = acc;
+  
+      const newResult = `${result}\n${e.error.message}`
+      
+      addError(e, session);
+  
+      return {
+        result: newResult,
+        lastError: e
+      };
+    }, { result: '', lastError: null });
+    setResult(result);
+  }
+  
+  const addError = (e, session) => {  
+    setAceEditorErrors(prevErrors => [
+      ...prevErrors,
+      {
+        row: e.error.line,
+        column: Math.random(),
+        type: 'error',
+        text: e.error.shorterMessage
+      }
+    ]);
+  
+    setAceEditorMarkers(prevMarkers => {
+        const lineLength = session.getLine(e.error.line).length;
+        return [
+        ...prevMarkers,
+        {
+          startRow: e.error.line,
+          startCol: e.error.index,
+          endRow: e.error.line,
+          endCol: lineLength,
+          className: 'error-highlight',
+          type: 'text',
+          inFront: true
+        }
+      ]
+  });
+  };
+  
+ 
   function execute_cycle() {
     try {
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION)
@@ -339,6 +391,7 @@ export default function CodeExecutor() {
               height={aceEditorHeight} //TODO: Find a better way to set the height
               width={aceEditorHeight}
               annotations={aceEditorErrors}
+              markers={aceEditorMarkers} 
               editorProps={{ $blockScrolling: true }}
               fontSize={20}
               focus={true}
