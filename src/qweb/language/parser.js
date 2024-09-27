@@ -46,7 +46,7 @@ class Parser {
 
 }
 
-class InvalidInstructionError extends Error {
+export class InvalidInstructionError extends Error {
   constructor(invalidCode, index) {
     super(`Tu programa contiene al menos una instrucción incompleta o erronea: \n\nInstrucción fallida: ${invalidCode}\nEn la linea: ${index + 1}`)
     this.shorterMessage = "Error de sintaxis"
@@ -55,7 +55,7 @@ class InvalidInstructionError extends Error {
   }
 }
 
-class ParserError extends Error {
+export class ParserError extends Error {
   constructor(invalidCode, index, line) {
     super(`Hubo un error de sintaxis: \n${invalidCode}\n${" ".repeat(index)}^`)
     this.shorterMessage = `Error de sintaxis: \n${invalidCode}\n${" ".repeat(index)}^`
