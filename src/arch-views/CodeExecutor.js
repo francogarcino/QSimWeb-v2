@@ -288,21 +288,9 @@ export default function CodeExecutor() {
         details: [{ key: "IR desensamblado:", value: computer.state.IR_DESCRIPTIVE }].concat(getDetails(computer.state.IR)),
       },
     ])
-    setFlags(
-      [
-        { key: "Z", value: computer.state.Z, name: "Zero", updated: updatedFlag("Z", computer.state.Z) },
-        { key: "N", value: computer.state.N, name: "Negative", updated: updatedFlag("N", computer.state.N) },
-        { key: "C", value: computer.state.C, name: "Carry", updated: updatedFlag("C", computer.state.C) },
-        { key: "V", value: computer.state.V, name: "Overflow", updated: updatedFlag("V", computer.state.V) }
-      ],
-    )
+    setFlags(computer.get_updated_flags())
     setMemory(getMemory())
     setResult("La ejecución fue exitosa")
-  }
-
-  function updatedFlag(id, value) {
-    const flag = flags.find(f => f.key === id)
-    return Boolean(flag) && flag.value !== value
   }
 
   function updatedRegister(id, value, registers) {

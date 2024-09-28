@@ -148,6 +148,25 @@ class Computer {
     if (routine.from_cell)
       this.state.PC = hex2dec(routine.from_cell)
   }
+
+  _updatedFlag(id, value) {
+    const flags = [
+        this.state.N, this.state.V, this.state.C, this.state.Z
+    ]
+    const flag = flags.find(f => f.key === id)
+    return Boolean(flag) && flag.value !== value
+  }
+
+  get_updated_flags() {
+    return(
+        [
+          { key: "Z", value: computer.state.Z, name: "Zero", updated: this._updatedFlag("Z", computer.state.Z) },
+          { key: "N", value: computer.state.N, name: "Negative", updated: this._updatedFlag("N", computer.state.N) },
+          { key: "C", value: computer.state.C, name: "Carry", updated: this._updatedFlag("C", computer.state.C) },
+          { key: "V", value: computer.state.V, name: "Overflow", updated: this._updatedFlag("V", computer.state.V) }
+        ]
+    )
+  }
 }
 
 class State {
