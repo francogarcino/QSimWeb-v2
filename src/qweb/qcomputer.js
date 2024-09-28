@@ -4,6 +4,7 @@ import { Action, ACTIONS } from './actions'
 import { Instruction } from './instructions'
 import { DefaultCellValue } from './defaultValues'
 import { DisabledRegisterError, ImmediateAsTarget, ExcecutionFinished, IncompleteRoutineError } from './exceptions'
+import {getDetails, hexa, toHexa} from "../utils";
 var { hex2dec, dec2hex, dec2bin, bin2dec, fixN, is_negative } = require('./helper')
 
 
@@ -167,6 +168,52 @@ class Computer {
         ]
     )
   }
+
+  updatedRegister(id, value, registers) {
+    const register = registers.find(r => r.id === id)
+    return Boolean(register) && register.value !== value
+  }
+
+  get_updated_registers() {
+    return(
+        this.state.registers.map(r => {
+          return {
+            ...r,
+            id: `R${r.id}`,
+            value: hexa(r.value),
+            details: getDetails(r.value),
+            updated: this.updatedRegister(`R${r.id}`, hexa(r.value), this.state.registers),
+          }
+        })
+    )
+  }
+
+  get_updated_special_registers() {
+    return([
+      {
+        id: "SP",
+        value: toHexa(computer.state.SP),
+        details: getDetails(computer.state.SP),
+        updated: this.updatedRegister("SP", toHexa(computer.state.SP), [this.state.PC, this.state.SP, this.state.IR]),
+      },
+      {
+        id: "PC",
+        value: toHexa(computer.state.PC),
+        details: getDetails(computer.state.PC),
+      },
+      {
+        id: "IR",
+        value: this.getIR(),
+        details: [{ key: "IR desensamblado:", value: computer.state.IR_DESCRIPTIVE }].concat(getDetails(computer.state.IR)),
+      },
+    ])
+  }
+
+  // TODO mejorar
+  getIR() {
+    const ir = computer.state.IR
+    return ir ? hexa(ir.match(/.{1,4}(?=(.{4})+(?!.))|.{1,4}$/g).join(" ")) : ""
+  }
 }
 
 class State {
@@ -247,20 +294,12 @@ class State {
   }
 
   read_register(id) {
-    this.assert_register(id)
     const register_value = this.registers[id].value
     this.save_action(ACTIONS.READ_REGISTER, { register: id, value: register_value })
     return hex2dec(register_value)
   }
 
-  assert_register(id) {
-    if (!this.registers[id]) {
-      throw new DisabledRegisterError(`El registro R${id} esta deshabilitado`)
-    }
-  }
-
   write_register(id, value) {
-    this.assert_register(id)
     this.save_action(ACTIONS.WRITE_REGISTER, { register: id, value })
     this.registers[id].value = value
   }
