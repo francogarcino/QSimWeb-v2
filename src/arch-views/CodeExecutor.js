@@ -84,7 +84,7 @@ export default function CodeExecutor() {
   const [actions, setActions] = useState([])
   const [historicActions, setHistoricActions] = useState([])
   const [aceEditorHeight, setAceEditorHeight] = useState(window.innerHeight - (isMobile ? 100 : 150) + 'px')
-  const [aceEditorErrors, setAceEditorErrors] = useState([])
+  const [aceEditorAnnotations, setAceEditorAnnotations] = useState([])
   const [aceEditorMarkers, setAceEditorMarkers] = useState([])
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const classes = useStyles();
@@ -92,9 +92,20 @@ export default function CodeExecutor() {
   const actionMode = qConfig.getItem('actions_mode')
   const CurrentActionMode = useMemo(() => ActionMode.find_modeclass(actionMode), [actionMode])
   const [currentExecutionMode, setCurrentExecutionMode] = useState(EXECUTION_MODE_NORMAL)
+  const markerType = {
+    error: {
+      type: 'error',
+      className: 'error-highlight'
+    },
+    warning: {
+      type: 'warning',
+      className: 'warning-highlight'
+    }
+  };
 
   useEffect(() => {
     parse_warnings(getCode())
+    setResult('')
   }, [code])
   
   function load_program(routines) {
@@ -149,10 +160,10 @@ export default function CodeExecutor() {
 
   function parse_code(codeToParse) {
     try {
-      setAceEditorErrors([])
+      setAceEditorAnnotations([])
       setAceEditorMarkers([])
       const { routines, errors } = parser.parse_code(codeToParse)
-      addErrors(errors)
+      addNotifications(errors, 'error')
       const hasErrors = errors.some(e => e && e.error);
 
       if(!hasErrors) {
@@ -164,102 +175,39 @@ export default function CodeExecutor() {
       //setResult(e.message)
     }
   }
-  function addErrors(errors) {
-    const session = aceEditorRef.current.editor.session;
-    const { result } = errors.reduce((acc, e) => {
-      const { result } = acc;
-
-      const newResult = `${result}\n${e.error.message}`
-
-      addError(e, session);
-
-      return {
-        result: newResult,
-        lastError: e
-      };
-    }, { result: '', lastError: null });
-    setResult(result);
-  }
-
-  const addError = (e, session) => {
-    setAceEditorErrors(prevErrors => [
-      ...prevErrors,
-      {
-        row: e.error.line,
-        column: Math.random(),
-        type: 'error',
-        text: e.error.shorterMessage
-      }
-    ]);
-
-    setAceEditorMarkers(prevMarkers => {
-      const lineLength = session.getLine(e.error.line).length;
-      return [
-        ...prevMarkers,
-        {
-          startRow: e.error.line,
-          startCol: e.error.index,
-          endRow: e.error.line,
-          endCol: lineLength,
-          className: 'error-highlight',
-          type: 'text',
-          inFront: true
-        }
-      ]
-    });
-  };
-
-  function addErrors(errors) {
-    const session = aceEditorRef.current.editor.session;
-    const { result } = errors.reduce((acc, e) => {
-      const { result } = acc;
-
-      const newResult = `${result}\n${e.error.message}`
-
-      addError(e, session);
-
-      return {
-        result: newResult,
-        lastError: e
-      };
-    }, { result: '', lastError: null });
-    setResult(result);
-  }
 
   function parse_warnings(codeToParse) {
-    try {
-      setAceEditorErrors([])
+      setAceEditorAnnotations([])
       setAceEditorMarkers([])
-      const { routines, errors } = parser.parse_code(codeToParse)
-      addWarnings(errors)
-    }
-    catch (e) {
-      //addError(e)
-      //setResult(e.message)
-    }
+      const { errors } = parser.parse_code(codeToParse)
+      addNotifications(errors, 'warning')
   }
-  function addWarnings(errors) {
+
+  function addNotifications(errors, type) {
     const session = aceEditorRef.current.editor.session;
+    const typeOfMarker = markerType[type];
     const { result } = errors.reduce((acc, e) => {
       const { result } = acc;
 
       const newResult = `${result}\n${e.error.message}`
 
-      addWarning(e, session);
+      addNotification(e, session, typeOfMarker);
 
       return {
         result: newResult,
         lastError: e
       };
     }, { result: '', lastError: null });
+    setResult(result);
   }
-  const addWarning = (e, session) => {
-    setAceEditorErrors(prevErrors => [
+  const addNotification = (e, session, typeOfMarker) => {
+    const { type, className } = typeOfMarker;
+    setAceEditorAnnotations(prevErrors => [
       ...prevErrors,
       {
         row: e.error.line,
         column: Math.random(),
-        type: 'warning',
+        type: type,
         text: e.error.shorterMessage
       }
     ]);
@@ -273,7 +221,7 @@ export default function CodeExecutor() {
           startCol: e.error.index,
           endRow: e.error.line,
           endCol: lineLength,
-          className: 'warning-highlight',
+          className: className,
           type: 'text',
           inFront: true
         }
@@ -417,7 +365,7 @@ export default function CodeExecutor() {
                   onChange={setCode}
                   height={aceEditorHeight} //TODO: Find a better way to set the height
                   width={aceEditorHeight}
-                  annotations={aceEditorErrors}
+                  annotations={aceEditorAnnotations}
                   markers={aceEditorMarkers}
                   editorProps={{ $blockScrolling: true }}
                   fontSize={20}

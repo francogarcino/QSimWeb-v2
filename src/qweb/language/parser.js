@@ -55,7 +55,7 @@ class Parser {
 
 export class InvalidInstructionError extends Error {
   constructor(invalidCode, index) {
-    super(`La linea ${index + 1} no es una instrucción valida o esta mal formulada \n :${invalidCode} `)
+    super(`La linea ${index + 1} no es una instrucción valida o esta mal formulada: \n ${invalidCode} `)
     this.shorterMessage = "Instrucción no valida"
     this.invalidCode = invalidCode
     this.line = index
