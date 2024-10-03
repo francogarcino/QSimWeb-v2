@@ -55,8 +55,8 @@ class Parser {
 
 export class InvalidInstructionError extends Error {
   constructor(invalidCode, index) {
-    super(`Tu programa contiene al menos una instrucción incompleta o erronea: \n\nInstrucción fallida: ${invalidCode}\nEn la linea: ${index + 1}`)
-    this.shorterMessage = "Error de sintaxis"
+    super(`La linea ${index + 1} no es una instrucción valida o esta mal formulada \n :${invalidCode} `)
+    this.shorterMessage = "Instrucción no valida"
     this.invalidCode = invalidCode
     this.line = index
   }

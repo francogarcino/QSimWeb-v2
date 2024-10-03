@@ -93,6 +93,10 @@ export default function CodeExecutor() {
   const CurrentActionMode = useMemo(() => ActionMode.find_modeclass(actionMode), [actionMode])
   const [currentExecutionMode, setCurrentExecutionMode] = useState(EXECUTION_MODE_NORMAL)
 
+  useEffect(() => {
+    parse_warnings(getCode())
+  }, [code])
+  
   function load_program(routines) {
     computer.load_many(routines)
   }
@@ -205,7 +209,77 @@ export default function CodeExecutor() {
     });
   };
 
+  function addErrors(errors) {
+    const session = aceEditorRef.current.editor.session;
+    const { result } = errors.reduce((acc, e) => {
+      const { result } = acc;
 
+      const newResult = `${result}\n${e.error.message}`
+
+      addError(e, session);
+
+      return {
+        result: newResult,
+        lastError: e
+      };
+    }, { result: '', lastError: null });
+    setResult(result);
+  }
+
+  function parse_warnings(codeToParse) {
+    try {
+      setAceEditorErrors([])
+      setAceEditorMarkers([])
+      const { routines, errors } = parser.parse_code(codeToParse)
+      addWarnings(errors)
+    }
+    catch (e) {
+      //addError(e)
+      //setResult(e.message)
+    }
+  }
+  function addWarnings(errors) {
+    const session = aceEditorRef.current.editor.session;
+    const { result } = errors.reduce((acc, e) => {
+      const { result } = acc;
+
+      const newResult = `${result}\n${e.error.message}`
+
+      addWarning(e, session);
+
+      return {
+        result: newResult,
+        lastError: e
+      };
+    }, { result: '', lastError: null });
+  }
+  const addWarning = (e, session) => {
+    setAceEditorErrors(prevErrors => [
+      ...prevErrors,
+      {
+        row: e.error.line,
+        column: Math.random(),
+        type: 'warning',
+        text: e.error.shorterMessage
+      }
+    ]);
+
+    setAceEditorMarkers(prevMarkers => {
+      const lineLength = session.getLine(e.error.line).length;
+      return [
+        ...prevMarkers,
+        {
+          startRow: e.error.line,
+          startCol: e.error.index,
+          endRow: e.error.line,
+          endCol: lineLength,
+          className: 'warning-highlight',
+          type: 'text',
+          inFront: true
+        }
+      ]
+    });
+  };
   function execute_cycle() {
     try {
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION)
