@@ -31,7 +31,7 @@ class Parser {
     return codeToParse.split(/\r\n|\r|\n/).reduce((acc, line, index) => {
       let { routines, errors } = acc;
       line = line.includes('#') ? line.slice(0, line.indexOf('#')) : line //Delete comments
-      
+      line = line.trim();
       if (!line) return acc
       try {
         const parsed_instruction = this.parse_line(line, index)

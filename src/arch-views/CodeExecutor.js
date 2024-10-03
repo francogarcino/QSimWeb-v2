@@ -8,8 +8,8 @@ import FlagsPreview from './FlagsPreview.js'
 import Memory from './Memory.js'
 import translator from '../qweb/language/translator.js'
 import parser from '../qweb/language/parser.js'
-import { ImmediateAsTarget, DisabledInstructionError, DisabledRegisterError, DivideByZeroError, 
-  UndefinedCellValueError, UndefinedLabel, DisabledAddressingModeError, IncompleteRoutineError, 
+import { ImmediateAsTarget, DisabledInstructionError, DisabledRegisterError, DivideByZeroError,
+  UndefinedCellValueError, UndefinedLabel, DisabledAddressingModeError, IncompleteRoutineError,
   EmptyStackError } from '../qweb/exceptions.js'
 import FlashOnIcon from '@material-ui/icons/FlashOn';
 import FlashAutoIcon from '@material-ui/icons/FlashAuto';
@@ -124,8 +124,8 @@ export default function CodeExecutor() {
 
   function getActionTypes(actions) {
     return actions.map(ca => CurrentActionMode.map_computer_action(ca))
-      .filter(ca => CurrentActionMode.valid_action_types().includes(ca.name))
-      .map(ca => ActionType.find_subclass(ca))
+        .filter(ca => CurrentActionMode.valid_action_types().includes(ca.name))
+        .map(ca => ActionType.find_subclass(ca))
   }
 
   function execute() {
@@ -150,7 +150,7 @@ export default function CodeExecutor() {
       const { routines, errors } = parser.parse_code(codeToParse)
       addErrors(errors)
       const hasErrors = errors.some(e => e && e.error);
-      
+
       if(!hasErrors) {
         return routines
       }
@@ -164,11 +164,11 @@ export default function CodeExecutor() {
     const session = aceEditorRef.current.editor.session;
     const { result } = errors.reduce((acc, e) => {
       const { result } = acc;
-  
+
       const newResult = `${result}\n${e.error.message}`
-      
+
       addError(e, session);
-  
+
       return {
         result: newResult,
         lastError: e
@@ -176,8 +176,8 @@ export default function CodeExecutor() {
     }, { result: '', lastError: null });
     setResult(result);
   }
-  
-  const addError = (e, session) => {  
+
+  const addError = (e, session) => {
     setAceEditorErrors(prevErrors => [
       ...prevErrors,
       {
@@ -187,10 +187,10 @@ export default function CodeExecutor() {
         text: e.error.shorterMessage
       }
     ]);
-  
+
     setAceEditorMarkers(prevMarkers => {
-        const lineLength = session.getLine(e.error.line).length;
-        return [
+      const lineLength = session.getLine(e.error.line).length;
+      return [
         ...prevMarkers,
         {
           startRow: e.error.line,
@@ -202,10 +202,10 @@ export default function CodeExecutor() {
           inFront: true
         }
       ]
-  });
+    });
   };
-  
- 
+
+
   function execute_cycle() {
     try {
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION)
@@ -261,65 +261,18 @@ export default function CodeExecutor() {
   }
 
   function display_results() {
-    setRegisters(computer.state.registers.map(r => {
-      return {
-        ...r,
-        id: `R${r.id}`,
-        value: hexa(r.value),
-        details: getDetails(r.value),
-        updated: updatedRegister(`R${r.id}`, hexa(r.value), registers),
-      }
-    }))
-    setSpecialRegisters([
-      {
-        id: "SP",
-        value: toHexa(computer.state.SP),
-        details: getDetails(computer.state.SP),
-        updated: updatedRegister("SP", toHexa(computer.state.SP), specialRegisters),
-      },
-      {
-        id: "PC",
-        value: toHexa(computer.state.PC),
-        details: getDetails(computer.state.PC),
-      },
-      {
-        id: "IR",
-        value: getIR(),
-        details: [{ key: "IR desensamblado:", value: computer.state.IR_DESCRIPTIVE }].concat(getDetails(computer.state.IR)),
-      },
-    ])
-    setFlags(
-      [
-        { key: "Z", value: computer.state.Z, name: "Zero", updated: updatedFlag("Z", computer.state.Z) },
-        { key: "N", value: computer.state.N, name: "Negative", updated: updatedFlag("N", computer.state.N) },
-        { key: "C", value: computer.state.C, name: "Carry", updated: updatedFlag("C", computer.state.C) },
-        { key: "V", value: computer.state.V, name: "Overflow", updated: updatedFlag("V", computer.state.V) }
-      ],
-    )
+    setRegisters(computer.get_updated_registers())
+    setSpecialRegisters(computer.get_updated_special_registers())
+    setFlags(computer.get_updated_flags())
     setMemory(getMemory())
     setResult("La ejecución fue exitosa")
   }
 
-  function updatedFlag(id, value) {
-    const flag = flags.find(f => f.key === id)
-    return Boolean(flag) && flag.value !== value
-  }
-
-  function updatedRegister(id, value, registers) {
-    const register = registers.find(r => r.id === id)
-    return Boolean(register) && register.value !== value
-  }
-
-  function getIR() {
-    const ir = computer.state.IR
-    return ir ? hexa(ir.match(/.{1,4}(?=(.{4})+(?!.))|.{1,4}$/g).join(" ")) : ""
-  }
-
   function addAction(action_display, config = {}) {
     SNACKBAR_CONFIG['action'] = (
-      <Button onClick={() => closeSnackbar()}>
-        <CloseIcon />
-      </Button>
+        <Button onClick={() => closeSnackbar()}>
+          <CloseIcon />
+        </Button>
     )
     return enqueueSnackbar(action_display, { ...SNACKBAR_CONFIG, ...config })
   }
@@ -330,14 +283,14 @@ export default function CodeExecutor() {
     }
     const memory = computer.get_memory()
     return Object.keys(memory)
-      .map(k => {
-        return {
-          cell: k,
-          value: memory[k]
-        }
-      })
-      .filter(c => c.value !== null)
-      .sort(byCell)
+        .map(k => {
+          return {
+            cell: k,
+            value: memory[k]
+          }
+        })
+        .filter(c => c.value !== null)
+        .sort(byCell)
   }
 
   useEffect(() => {
@@ -356,9 +309,9 @@ export default function CodeExecutor() {
 
   document.onkeyup = function (e) {
     var event = e || window.event;
-    if (event.altKey && event.which === 83) { saveProgramAsTxt() } // alt + s
-    if (event.altKey && event.which === 82) { execute() } // alt + r
-    if (event.which === 13) { validateCode() } // enter
+    if (event.altKey && event.key === 's') { saveProgramAsTxt() }
+    if (event.altKey && event.key === 'r') { execute() }
+    if (event.which === 13) { validateCode() }
   }
 
   function validateCode() {
@@ -371,108 +324,108 @@ export default function CodeExecutor() {
   }
 
   return (
-    <>
-      <div style={{ height: '100%', width: '100%' }}>
-        <div style={isMobile ? {} : {
-          width: '40%',
-          height: '100px',
-          float: 'left',
-        }}>
-          {TabsCode}
-          <Box display="flex" flexDirection="row" style={{ padding: theme.spacing(0, 1) }}>
-            <AceEditor
-              ref={aceEditorRef}
-              name="ace-editor"
-              mode="python"
-              value={code}
-              placeholder={'Comenzá tu programa aquí'}
-              theme={theme.editor}
-              onChange={setCode}
-              height={aceEditorHeight} //TODO: Find a better way to set the height
-              width={aceEditorHeight}
-              annotations={aceEditorErrors}
-              markers={aceEditorMarkers} 
-              editorProps={{ $blockScrolling: true }}
-              fontSize={20}
-              focus={true}
-              setOptions={{
-                enableBasicAutocompletion: true,
-                enableLiveAutocompletion: true,
-                enableSnippets: true
-              }}
-            />
-          </Box>
-        </div>
-        <div style={isMobile ? {} : {
-          marginLeft: '40%',
-          height: '100px',
-        }}>
-          <Box p={1} m={1}>
-            <Grid container className={classes.root} spacing={2} direction="row" alignItems="flex-start">
-              <Grid item >
-                <ExecutionButton
-                  {...{
-                    'Ejecutar': { onClick: execute, icon: <FlashAutoIcon />, aria_label: 'Ejecutar todo el programa' },
-                    'Ejecutar una instrucción': { onClick: execute_cycle, icon: <FlashOnIcon />, aria_label: 'Ejecutar una instrucción' },
-                    'Ejecutar una instrucción detallada': { onClick: execute_cycle_detailed, icon: <OfflineBolt />, aria_label: 'Ejecutar una instrucción detallada' }
+      <>
+        <div style={{ height: '100%', width: '100%' }}>
+          <div style={isMobile ? {} : {
+            width: '40%',
+            height: '100px',
+            float: 'left',
+          }}>
+            {TabsCode}
+            <Box display="flex" flexDirection="row" style={{ padding: theme.spacing(0, 1) }}>
+              <AceEditor
+                  ref={aceEditorRef}
+                  name="ace-editor"
+                  mode="python"
+                  value={code}
+                  placeholder={'Comenzá tu programa aquí'}
+                  theme={theme.editor}
+                  onChange={setCode}
+                  height={aceEditorHeight} //TODO: Find a better way to set the height
+                  width={aceEditorHeight}
+                  annotations={aceEditorErrors}
+                  markers={aceEditorMarkers}
+                  editorProps={{ $blockScrolling: true }}
+                  fontSize={20}
+                  focus={true}
+                  setOptions={{
+                    enableBasicAutocompletion: true,
+                    enableLiveAutocompletion: true,
+                    enableSnippets: true
                   }}
-                />
+              />
+            </Box>
+          </div>
+          <div style={isMobile ? {} : {
+            marginLeft: '40%',
+            height: '100px',
+          }}>
+            <Box p={1} m={1}>
+              <Grid container className={classes.root} spacing={2} direction="row" alignItems="flex-start">
+                <Grid item >
+                  <ExecutionButton
+                      {...{
+                        'Ejecutar': { onClick: execute, icon: <FlashAutoIcon />, aria_label: 'Ejecutar todo el programa' },
+                        'Ejecutar una instrucción': { onClick: execute_cycle, icon: <FlashOnIcon />, aria_label: 'Ejecutar una instrucción' },
+                        'Ejecutar una instrucción detallada': { onClick: execute_cycle_detailed, icon: <OfflineBolt />, aria_label: 'Ejecutar una instrucción detallada' }
+                      }}
+                  />
+                </Grid>
+                {<Grid item className={classes.fab}>
+                  <PaginationTable
+                      keyName="Acción"
+                      rows={historicActions.map((action, index) => {
+                        return {
+                          id: index + 1,
+                          value: action
+                        }
+                      })}>
+                  </PaginationTable>
+                </Grid>}
               </Grid>
-              {<Grid item className={classes.fab}>
-                <PaginationTable
-                  keyName="Acción"
-                  rows={historicActions.map((action, index) => {
-                    return {
-                      id: index + 1,
-                      value: action
-                    }
-                  })}>
-                </PaginationTable>
-              </Grid>}
-            </Grid>
-            <TextField
-              id="results-box-id"
-              InputProps={{
-                classes: {
-                  input: classes.results,
-                },
-              }}
-              multiline
-              rows={result.split('\n').length + 1}
-              margin="normal"
-              variant="outlined"
-              fullWidth
-              value={result}
-            />
-            {registers.length > 0 &&
-              (<Grid container spacing={1}>
-                <Grid item xs={isMobile ? 12 : 4}>
-                  <ResultTitle title="Registros"></ResultTitle>
-                  <Registers registers={registers} />
-                </Grid>
-                <Grid item xs={isMobile ? 12 : 4}>
-                  <ResultTitle title="Registros especiales"></ResultTitle>
-                  <Registers registers={specialRegisters} />
-                  <ResultTitle title={"Flags"}></ResultTitle>
-                  <Paper elevation={2}>
-                    <Typography
-                      style={{ padding: theme.spacing(1.5), marginBottom: '0.05rem' }}
-                      variant="body1"
-                      aria-label={"flags"}
-                      align="center">{<FlagsPreview flags={flags} />}
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={isMobile ? 12 : 4}>
-                  <div style={{ overflowY: 'scroll' }}>
-                    <ResultTitle title="Memoria"></ResultTitle>
-                    <Memory memory={memory} />
-                  </div>
-                </Grid>
-              </Grid>)}
-          </Box>
+              <TextField
+                  id="results-box-id"
+                  InputProps={{
+                    classes: {
+                      input: classes.results,
+                    },
+                  }}
+                  multiline
+                  rows={result.split('\n').length + 1}
+                  margin="normal"
+                  variant="outlined"
+                  fullWidth
+                  value={result}
+              />
+              {registers.length > 0 &&
+                  (<Grid container spacing={1}>
+                    <Grid item xs={isMobile ? 12 : 4}>
+                      <ResultTitle title="Registros"></ResultTitle>
+                      <Registers registers={registers} />
+                    </Grid>
+                    <Grid item xs={isMobile ? 12 : 4}>
+                      <ResultTitle title="Registros especiales"></ResultTitle>
+                      <Registers registers={specialRegisters} />
+                      <ResultTitle title={"Flags"}></ResultTitle>
+                      <Paper elevation={2}>
+                        <Typography
+                            style={{ padding: theme.spacing(1.5), marginBottom: '0.05rem' }}
+                            variant="body1"
+                            aria-label={"flags"}
+                            align="center">{<FlagsPreview flags={flags} />}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={isMobile ? 12 : 4}>
+                      <div style={{ overflowY: 'scroll' }}>
+                        <ResultTitle title="Memoria"></ResultTitle>
+                        <Memory memory={memory} />
+                      </div>
+                    </Grid>
+                  </Grid>)}
+            </Box>
+          </div>
         </div>
-      </div>
-    </>
+      </>
   )
 }

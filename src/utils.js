@@ -21,10 +21,6 @@ export function getDetails(value) {
     {
       key: 'Binario:',
       value: value === "" ? "" : toBin(value)
-    },
-    {
-      key: 'Decimal:',
-      value: value === "" ? "" : toDec(value)
     }
   ]
 }
