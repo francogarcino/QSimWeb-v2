@@ -3,6 +3,7 @@
 import { default as grammar } from './grammar';
 import { Routine } from '../routine'
 const nearley = require("nearley");
+const instructions = ["MOV","ADD","MUL","AND", "OR", "DIV", "CMP", "SUB"]
 
 class Parser {
   parse_line(codeToParse, index) {
@@ -10,9 +11,17 @@ class Parser {
     try {
       //Le mandamos la linea completa como feed
       parser.feed(codeToParse)
+      //Chequeo si la linea empieza con una instrucción valida
+      const startsWithInstruction = instructions.some(instruction => codeToParse.startsWith(instruction));
       //Si la linea completa no alcanza, quiere decir que la linea está mal formada, no hay resultados, entonces es un error
-      if (parser.results.length === 0)
+      if (parser.results.length === 0 && startsWithInstruction) {
+        //Si no tengo resultados y la linea empieza con una instrucción de Q1, entonces es una instrucción incompleta
+        throw new IncompleteInstructionError(codeToParse, index)
+      }
+      if (parser.results.length === 0) {
+        //En caso de que no empiece con una instrucción, no es una instrucción válida.
         throw new InvalidInstructionError(codeToParse, index)
+      }
       //Si no lanzó error, tiene que haber un resultado válido
       //Nearley devuelve una lista de resultados válidos porque permite ambigüedad en gramáticas
       //La nuestra no es ambigua, entonces usamos el primer resultado.
@@ -61,14 +70,31 @@ export class InvalidInstructionError extends Error {
     this.line = index
   }
 }
-
+export class IncompleteInstructionError extends Error {
+  constructor(invalidCode, index) {
+    super(`La instrucción de la linea ${index + 1} esta incompleta: \n ${invalidCode} `)
+    this.shorterMessage = "Instrucción incompleta"
+    this.invalidCode = invalidCode
+    this.line = index
+  }
+}
 export class ParserError extends Error {
   constructor(invalidCode, index, line) {
-    super(`Hubo un error de sintaxis: \n${invalidCode}\n${" ".repeat(index)}^`)
-    this.shorterMessage = `Error de sintaxis: \n${invalidCode}\n${" ".repeat(index)}^`
-    this.invalidCode = invalidCode
-    this.index = index
-    this.line = line
+    const startsWithInstruction = instructions.some(instruction => invalidCode.startsWith(instruction));
+    if(index === undefined && startsWithInstruction) {
+      super(`La instrucción esta incompleta: \n${invalidCode}\n${" ".repeat(index)}^`)
+      this.shorterMessage = `Instrucción incompleta: \n${invalidCode}\n${" ".repeat(index)}^`
+      this.invalidCode = invalidCode
+      this.index = index
+      this.line = line
+    }
+    else {
+      super(`Hubo un error de sintaxis: \n${invalidCode}\n${" ".repeat(index)}^`)
+      this.shorterMessage = `Error de sintaxis: \n${invalidCode}\n${" ".repeat(index)}^`
+      this.invalidCode = invalidCode
+      this.index = index
+      this.line = line
+    }
   }
 }
 
