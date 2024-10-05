@@ -11,7 +11,7 @@ context('Syntax Errors', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(program))
 
-    cy.get('[id="results-box-id"]').should('have.value', `Hubo un error de sintaxis: \n${program[0]}\n  ^`)
+    cy.get('[id="results-box-id"]').should('have.value', `\nHubo un error de sintaxis: \n${program[0]}\n  ^`)
   })
 
   it('Fixing a program with syntax errors clears the error message', () => {
@@ -19,12 +19,12 @@ context('Syntax Errors', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(program))
 
-    cy.get('[id="results-box-id"]').should('have.value', `Hubo un error de sintaxis: \n${program[0]}\n  ^`)
+    cy.get('[id="results-box-id"]').should('have.value', `\nHubo un error de sintaxis: \n${program[0]}\n  ^`)
 
     cy.get('[id="ace-editor"]')
     .type(getProgram(['{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}ov r0 r1', '']))
 
-    cy.get('[id="results-box-id"]').should('not.have.value', `Hubo un error de sintaxis: \n${program[0]}\n  ^`)
+    cy.get('[id="results-box-id"]').should('not.have.value', `\nHubo un error de sintaxis: \n${program[0]}\n  ^`)
   })
 })
  

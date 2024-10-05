@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+.error-highlight {
+  position: absolute;
+  border-bottom: 1px solid red;
+}
+
+.warning-highlight {
+  position: absolute;
+  border-bottom: 2px solid rgb(207, 207, 2);
+}
