@@ -8,7 +8,7 @@ context('Ejecutions', () => {
 
   it('Valid program shows success message and the registers have the correct value ', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['MOV R1 0x0001', 'MOV R2 0x0002']))
+      .type(getProgram(['MOV R1, 0x0001', 'MOV R2, 0x0002']))
 
     cy.get('[id="execute-button-id"]').click()
 
@@ -19,7 +19,7 @@ context('Ejecutions', () => {
 
   it('Valid program with a rutine assembled in [0xcccc] shows succes message and has some value in [0xcccc]', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['MOV R1 0x0001', 'CALL foo', '[ASSEMBLE: 0xcccc]', 'foo: mov r2 0x0002', 'RET']))
+      .type(getProgram(['MOV R1, 0x0001', 'CALL foo', '[ASSEMBLE: 0xCCCC]', 'foo: MOV R2, 0x0002', 'RET']))
 
     cy.get('[id="execute-button-id"]').click()
 
@@ -32,7 +32,7 @@ context('Ejecutions', () => {
 
   it('Valid program with one simple instruction has the PC at 0x0001 when finished', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['MOV R1 R2']))
+      .type(getProgram(['MOV R1, R2']))
 
     cy.get('[id="execute-button-id"]').click()
 
@@ -41,7 +41,7 @@ context('Ejecutions', () => {
 
   it('Valid program with 4 simple instructions has the PC at 0x0004 when finished', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['MOV R1 R2', 'MOV R2 R2', 'MOV R3 R2', 'MOV R4 R2']))
+      .type(getProgram(['MOV R1, R2', 'MOV R2, R2', 'MOV R3, R2', 'MOV R4, R2']))
 
     cy.get('[id="execute-button-id"]').click()
 
@@ -50,7 +50,7 @@ context('Ejecutions', () => {
 
   it('Detailed Execution with verbose actions_mode displays the assembled cells', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['MOV R1 R2']))
+      .type(getProgram(['MOV R1, R2']))
     cy.get('[id="toggle-button-id"]').click()
     cy.get('[id="Ejecutar una instrucción detallada-id"]').click()
     cy.get('[id="execute-button-id"]').click()
@@ -60,7 +60,7 @@ context('Ejecutions', () => {
 
   it('Valid program with comments shows success message and the registers have the correct value', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['MOV R1 0x0001', 'MOV R2 0x0002#aComment', '#anOtherComment']))
+      .type(getProgram(['MOV R1, 0x0001', 'MOV R2, 0x0002#aComment', '#anOtherComment']))
 
     cy.get('[id="execute-button-id"]').click()
 
@@ -71,7 +71,7 @@ context('Ejecutions', () => {
 
   it('Executes invalid program, then valid one error must not be displayed', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['call rutina', '[assemble:0x2302]', 'rutina: mov r1 0x0020']))
+      .type(getProgram(['CALL rutina', '[assemble:0x2302]', 'rutina: MOV R1, 0x0020']))
 
     cy.get('[id="execute-button-id"]').click()
 
@@ -80,7 +80,7 @@ context('Ejecutions', () => {
     cy.wait(8000)
     
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['', 'ret']))
+      .type(getProgram(['', 'RET']))
 
     cy.get('[id="execute-button-id"]').click()
 
@@ -89,7 +89,7 @@ context('Ejecutions', () => {
 
   it('Valid program indented in any way shows success message and the registers have the correct value ', () => {
     cy.get('[id="ace-editor"]')
-      .type(getProgram(['     MOV R1,    0x0001', 'call  foo', '  [assemble: 0x00ff]', '   foo:    MOV    R2  0x0002', '  ret']))
+      .type(getProgram(['     MOV R1,    0x0001', 'CALL  foo', '  [assemble: 0x00FF]', '   foo:    MOV    R2,  0x0002', '  RET']))
 
     cy.get('[id="execute-button-id"]').click()
 

@@ -22,27 +22,6 @@ describe('Error handling', function () {
       assertError(function () { computer.execute() }, DisabledInstructionError, "La instruccion ADD esta deshabilitada")
     })
   })
-  describe('When R7 is disabled and try to read that register', function () {
-    it('Should raise DisabledRegisterError error', function () {
-      const r7 = new Register(7)
-      const r1 = new Register(1)
-      qConfig.set_config()
-      qConfig.setItem('registers_number', 5)
-      computer.restart()
-      computer.load_many([{ instructions: [new Instructions.MOV(r1, r7)], from_cell: '0x0000' }])
-      assertError(function () { computer.execute() }, DisabledRegisterError, "El registro R7 esta deshabilitado")
-    })
-  })
-  describe('When R7 is disabled and try to write that register', function () {
-    it('Should raise DisabledRegisterError error', function () {
-      const r7 = new Register(7)
-      qConfig.set_config()
-      qConfig.setItem('registers_number', 5)
-      computer.restart()
-      computer.load_many([{ instructions: [new Instructions.MOV(r7, new Immediate('0x2000'))], from_cell: '0x0000' }])
-      assertError(function () { computer.execute() }, DisabledRegisterError, "El registro R7 esta deshabilitado")
-    })
-  })
   describe('When label is not defined', function () {
     it('should raise UndefinedLabel error if not defined', function () {
       const r1 = new Register(1)

@@ -13,10 +13,10 @@ import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Tooltip from '@material-ui/core/Tooltip';
-import computer from './qweb/qcomputer'
-import { FileValidator, configFormFileValidators } from './FileValidator'
+import computer from '../qweb/qcomputer'
+import { FileValidator, configFormFileValidators } from '../FileValidator'
 import { useSnackbar } from 'notistack';
-import qConfig from './qweb/qConfig'
+import qConfig from '../qweb/qConfig'
 import { FormGroup } from '@material-ui/core';
 import Switch from '@material-ui/core/Switch';
 import { isMobile } from 'react-device-detect';
@@ -162,6 +162,7 @@ export default function ConfigForm({ open, setOpen }) {
         id={id}
         checked={enabled}
         color="primary"
+        disabled={true}
         onChange={instructionHandleChange}
         name={id} />}
       label={label}
@@ -210,30 +211,6 @@ export default function ConfigForm({ open, setOpen }) {
           <CloseIcon />
         </IconButton>
         <DialogContent>
-
-          <FormControl component="fieldset" className={classes.margin}>
-            <FormLabel component="legend" className={classes.marginBaby}>MUL modifica el registro R7:</FormLabel>
-            <FormControlLabel
-              labelPlacement="top"
-              id="mul_modifies_r7"
-              control={<Switch checked={mulModifiesR7} onChange={mulModifiesR7HandleChange} size="medium" name="mulModifiesR7" color="primary" />}
-            />
-          </FormControl>
-          <FormControl component="fieldset" className={classes.margin}>
-            <FormLabel component="legend" >Cantidad de registros:</FormLabel><br/>
-            <Slider
-              value={registersCount}
-              id="registers_number"
-              aria-labelledby="discrete-slider"
-              valueLabelDisplay="auto"
-              onChange={registersNumberChange}
-              step={1}
-              marks
-              min={1}
-              max={8}
-            />
-          </FormControl>
-
           <FormControl component="fieldset">
             <FormLabel component="legend">Valor por defecto de un registro sin inicializar:</FormLabel>
             <RadioGroup row aria-label="valor por defecto registro" name="valor por defecto registro">
