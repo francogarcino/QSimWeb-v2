@@ -3,7 +3,11 @@
 
 # QSim-Web-v2
 
-![a](https://github.com/user-attachments/assets/7fef7867-2241-44b8-816e-8219fd1c32e6)
+<picture>
+  <source srcset="src/images/qsimweb_t.png" media="(prefers-color-scheme: dark)">
+  <img src="src/images/qsweb.PNG" alt="Imagen para tema claro">
+</picture>
+
 
 Una mejora del simulador para el lenguaje simil a Assembly de bajo nivel **Q**, utilizado en la Universidad Nacional de Quilmes con propósitos educativos.
 
