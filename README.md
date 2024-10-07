@@ -9,8 +9,8 @@ Una mejora del simulador para el lenguaje simil a Assembly de bajo nivel **Q**, 
 
 El proyecto original fue desarrollado por Pablo Pissi y Francisco Perez Ramos a principios de 2021
 
-## Versión actual publica para el uso de las comisiones
-[🔗 En este enlace](https://qsim.unq.edu.ar)
+## Versión actual publica para el testing de los cambios implementados
+🔗 [En este enlace](https://qsimweb-v2.vercel.app)
 
 
 ## ¿Que estamos mejorando?
