@@ -1,9 +1,9 @@
 {
   "version": 1,
   "registers_number": 8,
-  "mul_modifies_r7": false,
+  "mul_modifies_r7": true,
   "default_value": {
-    "cells": "zero",
+    "cells": "random",
     "registers": "zero"
   },
   "actions_mode": "verbose",
