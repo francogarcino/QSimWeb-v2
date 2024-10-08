@@ -9,7 +9,7 @@
     "update-version": "node update-version.js",
     "dev": "react-scripts start",
     "start": "react-scripts --openssl-legacy-provider start",
-    "build": "react-scripts build",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "cy:run": "cypress run --spec 'cypress/integration/*'",
     "start-test-server": "npm start & wait-on http://localhost:3000"
   },
