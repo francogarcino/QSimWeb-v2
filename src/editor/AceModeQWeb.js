@@ -66,35 +66,54 @@ export default class CustomSqlMode extends window.ace.acequire("ace/mode/python"
 
 export class CustomCompleter {
   suggests = [
-    {"instruction": "MOV", "description": "copia el valor"},
-    {"instruction": "ADD", "description": ""},
-    {"instruction": "SUB", "description": ""},
-    {"instruction": "DIV", "description": "división sin resto"},
-    {"instruction": "MUL", "description": "modifica R7 siempre"},
+    {"instruction": "MOV", "description": "copia el valor", "label": false},
+    {"instruction": "ADD", "description": "", "label": false},
+    {"instruction": "SUB", "description": "", "label": false},
+    {"instruction": "DIV", "description": "división sin resto", "label": false},
+    {"instruction": "MUL", "description": "modifica R7 siempre", "label": false},
 
-    {"instruction": "CALL", "description": "invoca la rutina indicada"},
-    {"instruction": "RET", "description": "marca el fin de una rutina"},
+    {"instruction": "CALL", "description": "invoca la rutina indicada", "label": true},
+    {"instruction": "RET", "description": "marca el fin de una rutina", "label": false},
 
-    {"instruction": "CMP", "description": "modifica los flags"},
-    {"instruction": "JMP", "description": ""},
-    {"instruction": "JE", "description": "si son iguales"},
-    {"instruction": "JNE", "description": "si no son iguales"},
-    {"instruction": "JLE", "description": "si es menor o igual"},
-    {"instruction": "JG", "description": "si es mayor"},
-    {"instruction": "JL", "description": "si es menor estricto"},
-    {"instruction": "JGE", "description": "si es mayor o igual"},
-    {"instruction": "JLEU", "description": "JLE, pero en BSS"},
-    {"instruction": "JGU", "description": "JG, pero en BSS"},
-    {"instruction": "JCS", "description": "JL, pero en BSS"},
-    {"instruction": "JNEG", "description": "si se activa Negativo"},
-    {"instruction": "JVS", "description": "si se activa Overflow"},
+    {"instruction": "CMP", "description": "modifica los flags", "label": false},
+    {"instruction": "JMP", "description": "", "label": true},
+    {"instruction": "JE", "description": "si son iguales", "label": true},
+    {"instruction": "JNE", "description": "si no son iguales", "label": true},
+    {"instruction": "JLE", "description": "si es menor o igual", "label": true},
+    {"instruction": "JG", "description": "si es mayor", "label": true},
+    {"instruction": "JL", "description": "si es menor estricto", "label": true},
+    {"instruction": "JGE", "description": "si es mayor o igual", "label": true},
+    {"instruction": "JLEU", "description": "JLE, pero en BSS", "label": true},
+    {"instruction": "JGU", "description": "JG, pero en BSS", "label": true},
+    {"instruction": "JCS", "description": "JL, pero en BSS", "label": true},
+    {"instruction": "JNEG", "description": "si se activa Negativo", "label": true},
+    {"instruction": "JVS", "description": "si se activa Overflow", "label": true},
 
-    {"instruction": "NOT", "description": ""},
-    {"instruction": "AND", "description": ""},
-    {"instruction": "OR", "description": ""}
+    {"instruction": "NOT", "description": "", "label": false},
+    {"instruction": "AND", "description": "", "label": false},
+    {"instruction": "OR", "description": "", "label": false}
   ];
   getCompletions(editor, session, pos, prefix, callback) {
     var instrucciones = qConfig.getItem("instruction")
+    const line = session.getLine(pos.row).trim();
+
+    const test = [ {"name": "alguna rutina"} ]
+    const instructionsWithLabels = this.suggests.filter(s => s.label)
+
+    if (instructionsWithLabels.some(inst => {return line.startsWith(inst.instruction)})) {
+      callback(null, test.map(r => {
+        return {
+          value: r.name
+        }
+      }));
+      return;
+    }
+
+    if (this.suggests.some(suggestion => { return line.includes(suggestion.instruction); })) {
+      callback(null, []);
+      return;
+    }
+
     if (prefix === prefix.toUpperCase()) {
       var active = this.suggests.filter(valid_suggestions => {
         return instrucciones.some(i =>  { return i.name === valid_suggestions.instruction && i.enabled });

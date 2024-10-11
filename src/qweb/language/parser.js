@@ -1,7 +1,6 @@
-
-
 import { default as grammar } from './grammar';
 import { Routine } from '../routine'
+
 const nearley = require("nearley");
 const instructions = ["MOV","ADD","MUL","AND", "OR", "DIV", "CMP", "SUB"]
 
@@ -39,7 +38,7 @@ class Parser {
     //
     return codeToParse.split(/\r\n|\r|\n/).reduce((acc, line, index) => {
       let { routines, errors } = acc;
-      line = line.includes('#') ? line.slice(0, line.indexOf('#')) : line //Delete comments
+      line = line.includes('#') ? line.slice(0, line.indexOf('#')) : line
       line = line.trim();
       if (!line) return acc
       try {
