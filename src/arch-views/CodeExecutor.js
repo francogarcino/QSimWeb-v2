@@ -102,6 +102,7 @@ export default function CodeExecutor() {
       className: 'warning-highlight'
     }
   };
+  const completer = new CustomCompleter()
 
   useEffect(() => {
     parse_warnings(getCode())
@@ -318,7 +319,7 @@ export default function CodeExecutor() {
   useEffect(() => {
     const customMode = new AceModeQWeb();
     aceEditorRef.current.editor.getSession().setMode(customMode);
-    aceEditorRef.current.editor.completers = [new CustomCompleter()]
+    aceEditorRef.current.editor.completers = [completer]
   }, [])
 
   useEffect(() => {

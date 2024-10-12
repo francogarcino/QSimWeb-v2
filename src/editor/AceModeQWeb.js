@@ -1,6 +1,7 @@
 import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/ext-language_tools"
 import qConfig from "../qweb/qConfig";
+import parser from "../qweb/language/parser";
 
 // Se configura que textos se deben resaltar en color, indicando que son validos como programa
 export class CustomHighlightRules extends window.ace.acequire(
@@ -65,6 +66,9 @@ export default class CustomSqlMode extends window.ace.acequire("ace/mode/python"
 }
 
 export class CustomCompleter {
+  constructor() {
+    this.routines = []
+  }
   suggests = [
     {"instruction": "MOV", "description": "copia el valor", "label": false},
     {"instruction": "ADD", "description": "", "label": false},
@@ -97,11 +101,14 @@ export class CustomCompleter {
     var instrucciones = qConfig.getItem("instruction")
     const line = session.getLine(pos.row).trim();
 
+    // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
+    const { routines, errors } = parser.parse_code(session.getValue())
+
     const test = [ {"name": "alguna rutina"} ]
     const instructionsWithLabels = this.suggests.filter(s => s.label)
 
     if (instructionsWithLabels.some(inst => {return line.startsWith(inst.instruction)})) {
-      callback(null, test.map(r => {
+      callback(null, routines.map(r => {
         return {
           value: r.name
         }
