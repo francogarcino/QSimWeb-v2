@@ -3,6 +3,8 @@ export class Routine {
     this.from_cell = assembly_cell
     this.instructions = []
     this.name = ""
+    this.labels = []
+    this.start_line = 0
   }
 
   add_instruction(instruction){
@@ -11,5 +13,9 @@ export class Routine {
 
   setName(name) {
     this.name = name
+  }
+
+  setEditorLine(index) {
+    this.start_line = index
   }
 }

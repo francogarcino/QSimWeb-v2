@@ -60,6 +60,11 @@ class Parser {
               currentRoutine = line.split(":")[0]
             }
             routines[routines.length - 1].setName(currentRoutine)
+            routines[routines.length - 1].setEditorLine(index + 1)
+          } else {
+            if (line.includes(":")) {
+              routines[routines.length - 1].labels.push(line.split(":")[0])
+            }
           }
           routines[routines.length - 1].add_instruction(parsed_instruction)
         }
@@ -67,8 +72,8 @@ class Parser {
       catch (error) {
         errors.push({ error, line: index })
       }
-
-      return { routines, errors }; 
+      console.log(routines)
+      return { routines, errors };
     }, { routines: [new Routine(assembly_cell)], errors: [] })
   }
 

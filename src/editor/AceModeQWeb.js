@@ -76,51 +76,59 @@ export class CustomCompleter {
     {"instruction": "DIV", "description": "división sin resto", "label": false},
     {"instruction": "MUL", "description": "modifica R7 siempre", "label": false},
 
-    {"instruction": "CALL", "description": "invoca la rutina indicada", "label": true},
+    {"instruction": "CALL", "description": "invoca la rutina indicada", "label": true, "in_scope": false},
     {"instruction": "RET", "description": "marca el fin de una rutina", "label": false},
 
     {"instruction": "CMP", "description": "modifica los flags", "label": false},
-    {"instruction": "JMP", "description": "", "label": true},
-    {"instruction": "JE", "description": "si son iguales", "label": true},
-    {"instruction": "JNE", "description": "si no son iguales", "label": true},
-    {"instruction": "JLE", "description": "si es menor o igual", "label": true},
-    {"instruction": "JG", "description": "si es mayor", "label": true},
-    {"instruction": "JL", "description": "si es menor estricto", "label": true},
-    {"instruction": "JGE", "description": "si es mayor o igual", "label": true},
-    {"instruction": "JLEU", "description": "JLE, pero en BSS", "label": true},
-    {"instruction": "JGU", "description": "JG, pero en BSS", "label": true},
-    {"instruction": "JCS", "description": "JL, pero en BSS", "label": true},
-    {"instruction": "JNEG", "description": "si se activa Negativo", "label": true},
-    {"instruction": "JVS", "description": "si se activa Overflow", "label": true},
+    {"instruction": "JMP", "description": "", "label": true, "in_scope": true},
+    {"instruction": "JE", "description": "si son iguales", "label": true, "in_scope": true},
+    {"instruction": "JNE", "description": "si no son iguales", "label": true, "in_scope": true},
+    {"instruction": "JLE", "description": "si es menor o igual", "label": true, "in_scope": true},
+    {"instruction": "JG", "description": "si es mayor", "label": true, "in_scope": true},
+    {"instruction": "JL", "description": "si es menor estricto", "label": true, "in_scope": true},
+    {"instruction": "JGE", "description": "si es mayor o igual", "label": true, "in_scope": true},
+    {"instruction": "JLEU", "description": "JLE, pero en BSS", "label": true, "in_scope": true},
+    {"instruction": "JGU", "description": "JG, pero en BSS", "label": true, "in_scope": true},
+    {"instruction": "JCS", "description": "JL, pero en BSS", "label": true, "in_scope": true},
+    {"instruction": "JNEG", "description": "si se activa Negativo", "label": true, "in_scope": true},
+    {"instruction": "JVS", "description": "si se activa Overflow", "label": true, "in_scope": true},
 
     {"instruction": "NOT", "description": "", "label": false},
     {"instruction": "AND", "description": "", "label": false},
     {"instruction": "OR", "description": "", "label": false}
   ];
+
   getCompletions(editor, session, pos, prefix, callback) {
     var instrucciones = qConfig.getItem("instruction")
     const line = session.getLine(pos.row).trim();
 
     // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
     const { routines, errors } = parser.parse_code(session.getValue())
-
-    const test = [ {"name": "alguna rutina"} ]
     const instructionsWithLabels = this.suggests.filter(s => s.label)
 
-    if (instructionsWithLabels.some(inst => {return line.startsWith(inst.instruction)})) {
-      callback(null, routines.map(r => {
-        return {
-          value: r.name
-        }
-      }));
+    const matchingInstructions = instructionsWithLabels.filter(inst => line.startsWith(inst.instruction));
+
+    // recomendación de etiquetas
+    if (matchingInstructions.length > 0) {
+      const inScopeInstructions = matchingInstructions.filter(inst => !inst.in_scope);
+
+      if (inScopeInstructions.length > 0) {
+        callback(null, routines.map(r => {
+          return {
+            value: r.name
+          }
+        }));
+      }
       return;
     }
 
+    // Una sola recomendación de instrucción por linea
     if (this.suggests.some(suggestion => { return line.includes(suggestion.instruction); })) {
       callback(null, []);
       return;
     }
 
+    // recomendación de instrucción
     if (prefix === prefix.toUpperCase()) {
       var active = this.suggests.filter(valid_suggestions => {
         return instrucciones.some(i =>  { return i.name === valid_suggestions.instruction && i.enabled });
