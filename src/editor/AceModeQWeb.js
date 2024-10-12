@@ -104,18 +104,23 @@ export class CustomCompleter {
 
     // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
     const { routines, errors } = parser.parse_code(session.getValue())
-    const instructionsWithLabels = this.suggests.filter(s => s.label)
 
-    const matchingInstructions = instructionsWithLabels.filter(inst => line.startsWith(inst.instruction));
+    const withLabels = this.suggests.filter(s => s.label)
+    const matchingInstructions = withLabels.filter(inst => line.startsWith(inst.instruction));
 
     // recomendación de etiquetas
-    if (matchingInstructions.length > 0) {
-      const inScopeInstructions = matchingInstructions.filter(inst => !inst.in_scope);
-
-      if (inScopeInstructions.length > 0) {
+    if (matchingInstructions.length > 0) { //
+      if (line.startsWith("CALL")) {
         callback(null, routines.map(r => {
           return {
             value: r.name
+          }
+        }));
+      } else {
+        const current = routines[routines.filter(r => r.start_line < pos.row).length]
+        callback(null, current.labels.map(l => {
+          return {
+            value: l
           }
         }));
       }
@@ -123,7 +128,8 @@ export class CustomCompleter {
     }
 
     // Una sola recomendación de instrucción por linea
-    if (this.suggests.some(suggestion => { return line.includes(suggestion.instruction); })) {
+    if (this.suggests.some(suggestion => { return line.includes(suggestion.instruction); }) ||
+        line.match(/[aA][sS][sS][eE][mM][bB][lL][eE]/)) {
       callback(null, []);
       return;
     }
