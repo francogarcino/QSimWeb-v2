@@ -111,7 +111,10 @@ export default function ConfigForm({ open, setOpen }) {
   const [defaultValue, defaultValueSetState] = useState(qConfig.getItem("default_value"))
   const [addressingMode, addressingModeSetState] = useState(qConfig.getItem("addressing_mode").sort((a, b) => a.name > b.name ? 1 : -1))
   const [instruction, instructionSetState] = useState(qConfig.getItem("instruction").sort((a, b) => a.name > b.name ? 1 : -1))
-  const [configurations, setConfigurations] = useState(configs)
+  const [configurations, setConfigurations] = useState(() => {
+    const savedConfigs = localStorage.getItem('configurations');
+    return savedConfigs ? JSON.parse(savedConfigs) : configs;
+  });
   const [configuration, setConfiguration] = useState(configurations.find(c => c.enabled))
   const { enqueueSnackbar } = useSnackbar()
   const hiddenFileInput = React.useRef(null);
@@ -175,6 +178,7 @@ export default function ConfigForm({ open, setOpen }) {
     qConfig.setItem('addressing_mode', actConfig.addressing_mode);
     qConfig.setItem('instruction', actConfig.instruction);
     saveConfig()
+    localStorage.setItem('configurations', JSON.stringify(configurations));
   }
 
   function saveConfig() {
