@@ -72,7 +72,7 @@ class Parser {
       catch (error) {
         errors.push({ error, line: index })
       }
-      // console.log(routines)
+
       return { routines, errors };
     }, { routines: [new Routine(assembly_cell)], errors: [] })
   }

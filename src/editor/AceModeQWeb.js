@@ -76,7 +76,7 @@ export class CustomCompleter {
     {"instruction": "DIV", "description": "división sin resto", "label": false},
     {"instruction": "MUL", "description": "modifica R7 siempre", "label": false},
 
-    {"instruction": "CALL", "description": "invoca la rutina indicada", "label": true, "in_scope": false},
+    {"instruction": "CALL", "description": "invoca una rutina", "label": true, "in_scope": false},
     {"instruction": "RET", "description": "marca el fin de una rutina", "label": false},
 
     {"instruction": "CMP", "description": "modifica los flags", "label": false},
@@ -117,7 +117,8 @@ export class CustomCompleter {
           }
         }));
       } else {
-        const current = routines[routines.filter(r => r.start_line < pos.row).length]
+        let linea_actual = pos.row
+        const current = routines[routines.filter(r => r.start_line < linea_actual).length]
         callback(null, current.labels.map(l => {
           return {
             value: l
