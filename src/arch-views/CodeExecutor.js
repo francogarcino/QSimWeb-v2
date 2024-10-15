@@ -187,17 +187,12 @@ export default function CodeExecutor() {
     const session = aceEditorRef.current.editor.session;
     const { type, className } = markerType["info"];
 
-    const { result } = calls.reduce((acc, ca) => {
-      const { result } = acc;
+    calls.forEach(ca => {
 
-      const newResult = `${result}\n Llamado recursivo sobre ${ca.recursive_call} en la linea ${ca.line}. \n Este tipo de practicas escapa al alcance principal del simulador, y su ejecución puede fallar`
+      const msg = `Autoreferencia a \'${ca.recursive_call}\' en la linea ${ca.line}. Este tipo de código escapa al objetivo didactico del simulador. \n Su ejecución puede fallar por motivos de ejecución o arquitectura. \n`
 
-      return {
-        result: newResult,
-        lastError: ca
-      };
-    }, { result: '', lastError: null });
-    setResult(result);
+      setResult(prevState => `${prevState}\n${msg}`)
+    })
 
     calls.forEach(ca => {
       setAceEditorAnnotations(prevErrors => [
@@ -206,7 +201,7 @@ export default function CodeExecutor() {
           row: ca.line - 1,
           column: Math.random(),
           type: type,
-          text: "Llamado recursivo"
+          text: "Autoreferencia"
         }
       ]);
 
