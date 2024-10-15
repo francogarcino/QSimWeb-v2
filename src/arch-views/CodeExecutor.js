@@ -16,9 +16,8 @@ import FlashAutoIcon from '@material-ui/icons/FlashAuto';
 import OfflineBolt from '@material-ui/icons/OfflineBolt';
 import { useSnackbar } from 'notistack';
 import { ActionType } from '../action-type.js';
-import { toHexa, hexa, getDetails } from '../utils.js';
 import AceEditor from "react-ace";
-import AceModeQWeb from "../editor/AceModeQWeb.js";
+import AceModeQWeb, {CustomCompleter} from "../editor/AceModeQWeb.js";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-tomorrow";
 import FileSaver from 'file-saver';
@@ -100,8 +99,13 @@ export default function CodeExecutor() {
     warning: {
       type: 'warning',
       className: 'warning-highlight'
+    },
+    info: {
+      type: 'info',
+      className: 'info-highlight'
     }
   };
+  const completer = new CustomCompleter()
 
   useEffect(() => {
     parse_warnings(getCode())
@@ -162,8 +166,11 @@ export default function CodeExecutor() {
     try {
       setAceEditorAnnotations([])
       setAceEditorMarkers([])
-      const { routines, errors } = parser.parse_code(codeToParse)
+      const { routines, errors, recursives } = parser.parse_code(codeToParse)
       addNotifications(errors, 'error')
+
+      mark_recursives(recursives)
+
       const hasErrors = errors.some(e => e && e.error);
 
       if(!hasErrors) {
@@ -176,11 +183,52 @@ export default function CodeExecutor() {
     }
   }
 
+  function mark_recursives(calls) {
+    const session = aceEditorRef.current.editor.session;
+    const { type, className } = markerType["info"];
+
+    calls.forEach(ca => {
+
+      const msg = `Autoreferencia a \'${ca.recursive_call}\' en la linea ${ca.line}. Este tipo de código escapa al objetivo didactico del simulador. \n Su ejecución puede fallar por motivos de ejecución o arquitectura. \n`
+
+      setResult(prevState => `${prevState}\n${msg}`)
+    })
+
+    calls.forEach(ca => {
+      setAceEditorAnnotations(prevErrors => [
+        ...prevErrors,
+        {
+          row: ca.line - 1,
+          column: Math.random(),
+          type: type,
+          text: "Autoreferencia"
+        }
+      ]);
+
+      setAceEditorMarkers(prevMarkers => {
+        const lineLength = session.getLine(ca.line - 1).length;
+        return [
+          ...prevMarkers,
+          {
+            startRow: ca.line - 1,
+            startCol: 0,
+            endRow: ca.line - 1,
+            endCol: lineLength,
+            className: className,
+            type: 'text',
+            inFront: true
+          }
+        ]
+      });
+    })
+  }
+
   function parse_warnings(codeToParse) {
       setAceEditorAnnotations([])
       setAceEditorMarkers([])
-      const { errors } = parser.parse_code(codeToParse)
+      const { errors, recursives } = parser.parse_code(codeToParse)
       addNotifications(errors, 'warning')
+      mark_recursives(recursives)
   }
 
   function addNotifications(errors, type) {
@@ -318,6 +366,7 @@ export default function CodeExecutor() {
   useEffect(() => {
     const customMode = new AceModeQWeb();
     aceEditorRef.current.editor.getSession().setMode(customMode);
+    aceEditorRef.current.editor.completers = [completer]
   }, [])
 
   useEffect(() => {

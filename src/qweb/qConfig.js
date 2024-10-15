@@ -34,7 +34,9 @@ class QConfig {
   getConfig() {
     return JSON.stringify(config)
   }
-
+  getLocalConfig() {
+    return JSON.parse(localStorage.getItem('qweb-config')) || {};
+  }
   saveConfig() {
     localStorage.setItem('qweb-config', JSON.stringify(qConfig.storage))
   }

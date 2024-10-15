@@ -1,4 +1,7 @@
 import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/ext-language_tools"
+import qConfig from "../qweb/qConfig";
+import parser from "../qweb/language/parser";
 
 // Se configura que textos se deben resaltar en color, indicando que son validos como programa
 export class CustomHighlightRules extends window.ace.acequire(
@@ -59,5 +62,95 @@ export default class CustomSqlMode extends window.ace.acequire("ace/mode/python"
   constructor() {
     super();
     this.HighlightRules = CustomHighlightRules;
+  }
+}
+
+export class CustomCompleter {
+  constructor() {
+    this.routines = []
+  }
+  suggests = [
+    {"instruction": "MOV", "description": "copia el valor", "label": false},
+    {"instruction": "ADD", "description": "", "label": false},
+    {"instruction": "SUB", "description": "", "label": false},
+    {"instruction": "DIV", "description": "división sin resto", "label": false},
+    {"instruction": "MUL", "description": "modifica R7 siempre", "label": false},
+
+    {"instruction": "CALL", "description": "invoca una rutina", "label": true, "in_scope": false},
+    {"instruction": "RET", "description": "marca el fin de una rutina", "label": false},
+
+    {"instruction": "CMP", "description": "modifica los flags", "label": false},
+    {"instruction": "JMP", "description": "", "label": true, "in_scope": true},
+    {"instruction": "JE", "description": "si son iguales", "label": true, "in_scope": true},
+    {"instruction": "JNE", "description": "si no son iguales", "label": true, "in_scope": true},
+    {"instruction": "JLE", "description": "si es menor o igual", "label": true, "in_scope": true},
+    {"instruction": "JG", "description": "si es mayor", "label": true, "in_scope": true},
+    {"instruction": "JL", "description": "si es menor estricto", "label": true, "in_scope": true},
+    {"instruction": "JGE", "description": "si es mayor o igual", "label": true, "in_scope": true},
+    {"instruction": "JLEU", "description": "JLE, pero en BSS", "label": true, "in_scope": true},
+    {"instruction": "JGU", "description": "JG, pero en BSS", "label": true, "in_scope": true},
+    {"instruction": "JCS", "description": "JL, pero en BSS", "label": true, "in_scope": true},
+    {"instruction": "JNEG", "description": "si se activa Negativo", "label": true, "in_scope": true},
+    {"instruction": "JVS", "description": "si se activa Overflow", "label": true, "in_scope": true},
+
+    {"instruction": "NOT", "description": "", "label": false},
+    {"instruction": "AND", "description": "", "label": false},
+    {"instruction": "OR", "description": "", "label": false}
+  ];
+
+  getCompletions(editor, session, pos, prefix, callback) {
+    var instrucciones = qConfig.getItem("instruction")
+    const line = session.getLine(pos.row).trim();
+
+    // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
+    const { routines, errors } = parser.parse_code(session.getValue())
+
+    const withLabels = this.suggests.filter(s => s.label)
+    const matchingInstructions = withLabels.filter(inst => line.startsWith(inst.instruction));
+
+    // recomendación de etiquetas
+    if (matchingInstructions.length > 0) { //
+      if (line.startsWith("CALL")) {
+        callback(null, routines.map(r => {
+          return {
+            value: r.name
+          }
+        }));
+      } else {
+        let linea_actual = pos.row
+        const current = routines[routines.filter(r => r.start_line < linea_actual).length]
+        console.log(current)
+        if (current.labels.length > 0) {
+          callback(null, current.labels.map(l => {
+            return {
+              value: l
+            }
+          }));
+        }
+      }
+      return;
+    }
+
+    // Una sola recomendación de instrucción por linea
+    if (this.suggests.some(suggestion => { return line.includes(suggestion.instruction); }) ||
+        line.match(/[aA][sS][sS][eE][mM][bB][lL][eE]/)) {
+      callback(null, []);
+      return;
+    }
+
+    // recomendación de instrucción
+    if (prefix === prefix.toUpperCase()) {
+      var active = this.suggests.filter(valid_suggestions => {
+        return instrucciones.some(i =>  { return i.name === valid_suggestions.instruction && i.enabled });
+      });
+
+      callback(null, active.map(suggestion => {
+        return {
+          caption: suggestion.instruction,
+          value: suggestion.instruction,
+          meta: suggestion.description || "instrucción"
+        };
+      }));
+    }
   }
 }

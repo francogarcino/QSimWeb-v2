@@ -46,3 +46,9 @@
   position: absolute;
   border-bottom: 2px solid rgb(207, 207, 2);
 }
+
+.info-highlight {
+  position: absolute;
+  background-color: rgba(255, 200, 0, 0.3);
+  border-bottom: 1.5px solid darkorange;
+}
