@@ -40,7 +40,7 @@ class Parser {
     let shouldUpdateRoutine = true
 
     return codeToParse.split(/\r\n|\r|\n/).reduce((acc, line, index) => {
-      let { routines, errors } = acc;
+      let { routines, errors, recursives } = acc;
       line = line.includes('#') ? line.slice(0, line.indexOf('#')) : line
       line = line.trim();
       if (!line) return acc
@@ -54,6 +54,12 @@ class Parser {
           routines.push(routine)
         }
         else {
+          if (!shouldUpdateRoutine && line.includes(currentRoutine)) {
+            recursives.push({
+              recursive_call: currentRoutine,
+              line: index + 1
+            })
+          }
           if (shouldUpdateRoutine) {
             shouldUpdateRoutine = false
             if (line.includes(":")) {
@@ -72,9 +78,9 @@ class Parser {
       catch (error) {
         errors.push({ error, line: index })
       }
-
-      return { routines, errors };
-    }, { routines: [new Routine(assembly_cell)], errors: [] })
+      console.log(recursives)
+      return { routines, errors, recursives };
+    }, { routines: [new Routine(assembly_cell)], errors: [], recursives: [] })
   }
 
 }
