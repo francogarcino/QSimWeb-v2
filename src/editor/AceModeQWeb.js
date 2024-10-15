@@ -119,11 +119,14 @@ export class CustomCompleter {
       } else {
         let linea_actual = pos.row
         const current = routines[routines.filter(r => r.start_line < linea_actual).length]
-        callback(null, current.labels.map(l => {
-          return {
-            value: l
-          }
-        }));
+        console.log(current)
+        if (current.labels.length > 0) {
+          callback(null, current.labels.map(l => {
+            return {
+              value: l
+            }
+          }));
+        }
       }
       return;
     }
