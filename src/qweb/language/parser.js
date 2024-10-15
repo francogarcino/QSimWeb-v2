@@ -54,7 +54,7 @@ class Parser {
           routines.push(routine)
         }
         else {
-          if (!shouldUpdateRoutine && line.includes(currentRoutine)) {
+          if (!shouldUpdateRoutine && line.includes(currentRoutine) && currentRoutine.trim() !== "") {
             recursives.push({
               recursive_call: currentRoutine,
               line: index + 1
@@ -78,7 +78,7 @@ class Parser {
       catch (error) {
         errors.push({ error, line: index })
       }
-      console.log(recursives)
+
       return { routines, errors, recursives };
     }, { routines: [new Routine(assembly_cell)], errors: [], recursives: [] })
   }
