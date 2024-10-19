@@ -37,11 +37,9 @@ class Parser {
         let code_lines = codeToParse.split(/\r\n|\r|\n/)
         //TODO: agregar un chequeo de que si codeToParse es '' lance una Exception
 
-        let currentRoutine = ""
+        // let currentRoutine = ""
         let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
-        if (first_with_code !== undefined && first_with_code.includes(":")) {
-          currentRoutine = first_with_code.split(":")[0]
-        }
+        let currentRoutine = (first_with_code !== undefined && first_with_code.includes(":")) ? first_with_code.split(":")[0] : ""
         let shouldUpdateRoutine = true
 
         return code_lines.reduce((acc, line, index) => {
@@ -60,35 +58,44 @@ class Parser {
                 } else {
                     let recursive_body = !shouldUpdateRoutine && line.includes(currentRoutine) && currentRoutine.trim() !== ""
                     let recursive_declaration = (line.split(" ").filter(string => string.includes(currentRoutine)).length > 1) && currentRoutine.trim() !== ""
+                    this.detect_recursion(recursive_body, recursive_declaration, recursives, currentRoutine, index);
 
-                    if (recursive_body || recursive_declaration) {
-                        recursives.push({
-                            recursive_call: currentRoutine,
-                            line: index + 1
-                        })
-                    }
-                    if (shouldUpdateRoutine) {
-                        shouldUpdateRoutine = false
-                        if (line.includes(":")) {
-                            currentRoutine = line.split(":")[0]
-                        }
-                        routines[routines.length - 1].setName(currentRoutine)
-                        routines[routines.length - 1].setEditorLine(index + 1)
-                    } else {
-                        if (line.includes(":")) {
-                            routines[routines.length - 1].labels.push(line.split(":")[0])
-                        }
-                    }
+                    const __ret = this.update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index);
+                    shouldUpdateRoutine = __ret.shouldUpdateRoutine;
+                    currentRoutine = __ret.currentRoutine;
                     routines[routines.length - 1].add_instruction(parsed_instruction)
                 }
             } catch (error) {
                 errors.push({error, line: index})
             }
-
             return {routines, errors, recursives};
         }, {routines: [new Routine(assembly_cell)], errors: [], recursives: []})
     }
 
+    update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index) {
+        if (shouldUpdateRoutine) {
+            shouldUpdateRoutine = false
+            if (line.includes(":")) {
+                currentRoutine = line.split(":")[0]
+            }
+            routines[routines.length - 1].setName(currentRoutine)
+            routines[routines.length - 1].setEditorLine(index + 1)
+        } else {
+            if (line.includes(":")) {
+                routines[routines.length - 1].labels.push(line.split(":")[0])
+            }
+        }
+        return {shouldUpdateRoutine, currentRoutine};
+    }
+
+    detect_recursion(recursive_body, recursive_declaration, recursives, currentRoutine, index) {
+        if (recursive_body || recursive_declaration) {
+            recursives.push({
+                recursive_call: currentRoutine,
+                line: index + 1
+            })
+        }
+    }
 }
 
 export class InvalidInstructionError extends Error {

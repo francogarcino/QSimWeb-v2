@@ -103,31 +103,17 @@ export class CustomCompleter {
     const line = session.getLine(pos.row).trim();
 
     // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
-    const { routines, errors } = parser.parse_code(session.getValue())
+    const { routines} = parser.parse_code(session.getValue())
+
+    let prevs = routines.filter(r => r.start_line < pos.row)
+    const current = routines[Math.max(0, prevs.length - 1)]
 
     const withLabels = this.suggests.filter(s => s.label)
     const matchingInstructions = withLabels.filter(inst => line.startsWith(inst.instruction));
 
     // recomendación de etiquetas
-    if (matchingInstructions.length > 0) { //
-      if (line.startsWith("CALL")) {
-        callback(null, routines.map(r => {
-          return {
-            value: r.name
-          }
-        }));
-      } else {
-        let linea_actual = pos.row
-        const current = routines[routines.filter(r => r.start_line < linea_actual).length]
-        console.log(current)
-        if (current.labels.length > 0) {
-          callback(null, current.labels.map(l => {
-            return {
-              value: l
-            }
-          }));
-        }
-      }
+    if (matchingInstructions.length > 0) {
+      this.suggestions_for_labeled(line, callback, routines, pos);
       return;
     }
 
@@ -151,6 +137,27 @@ export class CustomCompleter {
           meta: suggestion.description || "instrucción"
         };
       }));
+    }
+  }
+
+  suggestions_for_labeled(line, callback, routines, pos) {
+    // TODO, deberia contemplar el caso 'label: CALL label'
+    if (line.startsWith("CALL")) {
+      callback(null, routines.map(r => {
+        return {
+          value: r.name
+        }
+      }));
+    } else {
+      let prevs = routines.filter(r => r.start_line < pos.row + 1)
+      const current = routines[Math.max(0, prevs.length - 1)]
+      if (current.labels.length > 0) {
+        callback(null, current.labels.map(l => {
+          return {
+            value: l
+          }
+        }));
+      }
     }
   }
 }

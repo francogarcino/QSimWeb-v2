@@ -206,14 +206,15 @@ export default function CodeExecutor() {
       ]);
 
       setAceEditorMarkers(prevMarkers => {
-        const lineLength = session.getLine(ca.line - 1).length;
+        const line = session.getLine(ca.line - 1);
         return [
           ...prevMarkers,
           {
             startRow: ca.line - 1,
-            startCol: 0,
+            startCol: line.search(/\S/),
             endRow: ca.line - 1,
-            endCol: lineLength,
+            endCol: line.split("#")[0].lastIndexOf(ca.recursive_call)
+                + ca.recursive_call.length,
             className: className,
             type: 'text',
             inFront: true
