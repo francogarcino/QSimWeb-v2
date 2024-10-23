@@ -30,6 +30,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import Slider from '@material-ui/core/Slider';
 import { useEffect } from 'react';
+import qlayers from '../images/q-layers.png'
 
 const useStyles = makeStyles(theme => ({
   margin: {
@@ -293,33 +294,9 @@ export default function ConfigForm({ open, setOpen }) {
               {configurations.map(i => getQVersion(i.value, i.enabled))}
             </RadioGroup>
           </FormControl><br />
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Valor por defecto de un registro sin inicializar:</FormLabel>
-            <RadioGroup row aria-label="valor por defecto registro" name="valor por defecto registro">
-              {defaultValueTypes.filter(appliesForRegister).map(getDefaultRegisterRadio)}
-            </RadioGroup>
-          </FormControl><br />
-
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Valor por defecto de una celda sin inicializar:</FormLabel>
-            <RadioGroup row aria-label="valor por defecto memoria" name="valor por defecto memoria">
-              {defaultValueTypes.map(getDefaultCellRadio)}
-            </RadioGroup>
-          </FormControl><br />
-
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Modos de direccionamiento:</FormLabel>
-            <FormGroup row aria-label="modo de direccionamiento" name="modo de direccionamiento">
-              {addressingMode.map(am => getAddressingModeCheckbox(am.name, am.display_name, am.enabled))}
-            </FormGroup>
-          </FormControl><br />
-
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Instrucciones habilitadas:</FormLabel>
-            <RadioGroup row aria-label="instrucciones habilitadas" name="instrucciones habilitadas">
-              {instruction.map(i => getInstructionCheckbox(i.name, i.display_name, i.enabled))}
-            </RadioGroup>
-          </FormControl><br />
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <img src={qlayers} alt="Q Layers" style={{ height: '80%', width: '80%', maxWidth: '100%', maxHeight: '100%' }} />
+          </div>
         </DialogContent>
         <DialogActions>
           <Tooltip title="Vuelve a la configuración por defecto">
