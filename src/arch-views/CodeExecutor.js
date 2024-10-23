@@ -8,9 +8,11 @@ import FlagsPreview from './FlagsPreview.js'
 import Memory from './Memory.js'
 import translator from '../qweb/language/translator.js'
 import parser from '../qweb/language/parser.js'
-import { ImmediateAsTarget, DisabledInstructionError, DisabledRegisterError, DivideByZeroError,
+import {
+  ImmediateAsTarget, DisabledInstructionError, DisabledRegisterError, DivideByZeroError,
   UndefinedCellValueError, UndefinedLabel, DisabledAddressingModeError, IncompleteRoutineError,
-  EmptyStackError } from '../qweb/exceptions.js'
+  EmptyStackError, StackOverflowError
+} from '../qweb/exceptions.js'
 import FlashOnIcon from '@material-ui/icons/FlashOn';
 import FlashAutoIcon from '@material-ui/icons/FlashAuto';
 import OfflineBolt from '@material-ui/icons/OfflineBolt';
@@ -67,7 +69,8 @@ const knownErrors = [
   IncompleteRoutineError,
   UndefinedCellValueError,
   UndefinedLabel,
-  ImmediateAsTarget
+  ImmediateAsTarget,
+  StackOverflowError
 ]
 
 export default function CodeExecutor() {
@@ -206,14 +209,15 @@ export default function CodeExecutor() {
       ]);
 
       setAceEditorMarkers(prevMarkers => {
-        const lineLength = session.getLine(ca.line - 1).length;
+        const line = session.getLine(ca.line - 1);
         return [
           ...prevMarkers,
           {
             startRow: ca.line - 1,
-            startCol: 0,
+            startCol: line.search(/\S/),
             endRow: ca.line - 1,
-            endCol: lineLength,
+            endCol: line.split("#")[0].lastIndexOf(ca.recursive_call)
+                + ca.recursive_call.length,
             className: className,
             type: 'text',
             inFront: true
