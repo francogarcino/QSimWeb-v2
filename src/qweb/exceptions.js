@@ -25,6 +25,13 @@ export class EmptyStackError extends Error {
   }
 }
 
+export class StackOverflowError extends Error {
+  constructor() {
+    super("Pila desbordada: la cantidad de rutinas invocadas supero el limite")
+    this.message = "Pila desbordada: la cantidad de rutinas invocadas supero el limite"
+  }
+}
+
 export class DisabledAddressingModeError extends Error {
   constructor(message) {
     super(message)
@@ -55,4 +62,4 @@ export class DivideByZeroError extends Error {
 export class UndefinedLabel extends Error{}
 export class ExcecutionFinished extends Error{}
 
-export default {DisabledInstructionError, DisabledAddressingModeError, DisabledRegisterError, DivideByZeroError, ImmediateAsTarget, UndefinedCellValueError, UndefinedLabel}
+export default {DisabledInstructionError, DisabledAddressingModeError, DisabledRegisterError, DivideByZeroError, ImmediateAsTarget, UndefinedCellValueError, UndefinedLabel, StackOverflowError}

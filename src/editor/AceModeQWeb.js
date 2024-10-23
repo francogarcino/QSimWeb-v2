@@ -109,7 +109,7 @@ export class CustomCompleter {
     const current = routines[Math.max(0, prevs.length - 1)]
 
     const withLabels = this.suggests.filter(s => s.label)
-    const matchingInstructions = withLabels.filter(inst => line.startsWith(inst.instruction));
+    const matchingInstructions = withLabels.filter(inst => line.includes(inst.instruction));
 
     // recomendación de etiquetas
     if (matchingInstructions.length > 0) {
@@ -142,7 +142,7 @@ export class CustomCompleter {
 
   suggestions_for_labeled(line, callback, routines, pos) {
     // TODO, deberia contemplar el caso 'label: CALL label'
-    if (line.startsWith("CALL")) {
+    if (line.includes("CALL")) {
       callback(null, routines.map(r => {
         return {
           value: r.name

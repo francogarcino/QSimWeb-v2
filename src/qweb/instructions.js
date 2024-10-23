@@ -1,7 +1,13 @@
 import qConfig from './qConfig'
 import { Operand, Immediate } from './operands'
 import labels from './labels'
-import { UndefinedLabel, DisabledInstructionError, DivideByZeroError, EmptyStackError } from './exceptions'
+import {
+  UndefinedLabel,
+  DisabledInstructionError,
+  DivideByZeroError,
+  EmptyStackError,
+  StackOverflowError
+} from './exceptions'
 let { dec2hex, dec2bin, fixN, is_positive, is_negative, tc2dec, decimalHexTwosComplement } = require('./helper')
 
 export class Instruction {
@@ -318,6 +324,7 @@ class SourceOnlyInstruction extends Instruction {
 class CALL extends SourceOnlyInstruction {
   execute_with_state(state) {
     const { sr } = this.read_values(state)
+    if (state.SP < 65488) { throw new StackOverflowError() }
     state.write_stack(state.SP, dec2hex(state.PC, 16))
     state.assign_pc(sr)
     state.SP -= 1

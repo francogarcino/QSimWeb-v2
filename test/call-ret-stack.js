@@ -3,6 +3,9 @@ import { Register, Immediate, Direct } from '../src/qweb/operands'
 import Instructions from '../src/qweb/instructions'
 import qConfig from '../src/qweb/qConfig'
 import { getHex, getOperandValue } from './utils'
+import parser from "../src/qweb/language/parser";
+import {StackOverflowError, UndefinedCellValueError} from "../src/qweb/exceptions";
+import labels from "../src/qweb/labels";
 let assert = require('assert')
 let { hex2dec } = require('../src/qweb/helper')
 
@@ -96,4 +99,33 @@ describe('CALL RET and STACK', function () {
       assert.strictEqual(5, getOperandValue(r1))
     })
   })
+
+  describe('stack limit', function () {
+    it('invoke too many routines without end them raise an exception', function () {
+      const r0 = new Register(0)
+      computer.load_many([{
+          instructions: [
+              new Instructions.MOV(r0, new Immediate("0x0064")),
+              new Instructions.CALL(new Immediate("0x0010"))
+          ], from_cell: '0x0000'
+        }, {
+          instructions: [
+              new Instructions.CMP(r0, new Immediate("0x0000")),
+              new Instructions.JE(new labels.LabelReference("fin")),
+              new Instructions.SUB(r0, new Immediate("0x0001")),
+              new Instructions.CALL(new Immediate("0x0010")),
+              new labels.Label("fin", new Instructions.RET)
+          ], from_cell: '0x0010'
+        }
+      ])
+      assertError(function () { computer.execute() }, StackOverflowError, "Pila desbordada: la cantidad de rutinas invocadas supero el limite")
+    })
+  })
 })
+
+function assertError(func, error, message) {
+  assert.throws(
+      func,
+      function (err) { return err instanceof error && err.message === message }
+  )
+}
