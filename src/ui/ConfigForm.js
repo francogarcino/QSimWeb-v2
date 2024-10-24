@@ -5,9 +5,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
-import CloudUpload from '@material-ui/icons/CloudUpload';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
@@ -23,14 +21,12 @@ import q3 from '../qweb/configs/q3.json'
 import q4 from '../qweb/configs/q4.json'
 import q5 from '../qweb/configs/q5.json'
 import q6 from '../qweb/configs/q6.json'
-import { FormGroup } from '@material-ui/core';
 import Switch from '@material-ui/core/Switch';
-import { isMobile } from 'react-device-detect';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
-import Slider from '@material-ui/core/Slider';
 import { useEffect } from 'react';
 import qlayers from '../images/q-layers.png'
+import { Autocomplete } from '@material-ui/lab';
 
 const useStyles = makeStyles(theme => ({
   margin: {
@@ -57,53 +53,41 @@ const SNACKBAR_CONFIG = {
   autoHideDuration: 6000
 }
 
-const defaultValueTypes = [
-  {
-    value: 'zero',
-    label: 'Cero',
-    appliesForRegister: true,
-  },
-  {
-    value: 'error',
-    label: 'Error',
-    appliesForRegister: false,
-  },
-  {
-    value: 'random',
-    label: 'Aleatorio',
-    appliesForRegister: true,
-  },
-]
-
 const configs = [
   {
     value: 'Q1',
     enabled: false,
+    autocomplete: false,
     file: q1,
   },
   {
     value: 'Q2',
     enabled: false,
+    autocomplete: false,
     file: q2,
   },
   {
     value: 'Q3',
     enabled: false,
+    autocomplete: false,
     file: q3,
   },
   {
     value: 'Q4',
     enabled: false,
+    autocomplete: false,
     file: q4,
   },
   {
     value: 'Q5',
     enabled: false,
+    autocomplete: true,
     file: q5,
   },
   {
     value: 'Q6',
     enabled: true,
+    autocomplete: true,
     file: q6,
   },
 ]
@@ -112,65 +96,56 @@ export default function ConfigForm({ open, setOpen }) {
   const [defaultValue, defaultValueSetState] = useState(qConfig.getItem("default_value"))
   const [addressingMode, addressingModeSetState] = useState(qConfig.getItem("addressing_mode").sort((a, b) => a.name > b.name ? 1 : -1))
   const [instruction, instructionSetState] = useState(qConfig.getItem("instruction").sort((a, b) => a.name > b.name ? 1 : -1))
-  const [configurations, setConfigurations] = useState(() => {
-    const savedConfigs = localStorage.getItem('configurations');
-    return savedConfigs ? JSON.parse(savedConfigs) : configs;
-  });
+  const [configurations, setConfigurations] = useState(qConfig.getConfigs());
   const [configuration, setConfiguration] = useState(configurations.find(c => c.enabled))
   const { enqueueSnackbar } = useSnackbar()
   const hiddenFileInput = React.useRef(null);
 
 
-  function updateCheckboxes() {
-    if(configurations.some((c) => c.enabled)) {
-      const actConfig = configuration.file;
-      defaultValueSetState(actConfig.default_value)
-      addressingModeSetState(actConfig.addressing_mode.sort((a, b) => a.name > b.name ? 1 : -1))
-      instructionSetState(actConfig.instruction.sort((a, b) => a.name > b.name ? 1 : -1))
+  function updateActiveConfigSettings() {
+    const activeConfig = configurations.find(c => c.enabled)
+    if(activeConfig) {
+      const fileConfig = activeConfig.file;
+      defaultValueSetState(fileConfig.default_value)
+      addressingModeSetState(fileConfig.addressing_mode.sort((a, b) => a.name > b.name ? 1 : -1))
+      instructionSetState(fileConfig.instruction.sort((a, b) => a.name > b.name ? 1 : -1))
     }
-  }
-
-  const defaultValueHandleChange = name => (event) => {
-    defaultValueSetState({ ...defaultValue, [name]: event.target.value });
-  };
-
-  const addressingModeHandleChange = (event) => {
-    const mode = addressingMode.find(am => am.name === event.target.name)
-    addressingModeSetState([...addressingMode.filter(am => am.name !== event.target.name), { ...mode, enabled: !mode.enabled }].sort((a, b) => a.name > b.name ? 1 : -1));
-  };
-
-  const instructionHandleChange = (event) => {
-    const ins = instruction.find(am => am.name === event.target.name)
-    instructionSetState([...instruction.filter(i => i.name !== event.target.name), { ...ins, enabled: !ins.enabled }].sort((a, b) => a.name > b.name ? 1 : -1));
+    return(activeConfig);
   };
 
   const qVersionChange = (event) => {
     const newConfigs = configurations.map(c => {
       if (c.value === event.target.name) {
-        return { ...c, enabled: !c.enabled };
+        return {
+          ...c,
+          enabled: !c.enabled,
+          autocomplete: (c.value === 'Q5' || c.value === 'Q6') ? true : c.autocomplete
+        };
       }
-      return { ...c, enabled: false };
+      return { ...c, enabled: false, autocomplete: false };
     });
-    updateCheckboxes()
     setConfigurations(newConfigs);
   };
 
   useEffect(() => {
-    const newConfig = configurations.find(c => c.enabled)
-    if(newConfig) {
-      const actConfig = newConfig.file;
-      defaultValueSetState(actConfig.default_value)
-      addressingModeSetState(actConfig.addressing_mode.sort((a, b) => a.name > b.name ? 1 : -1))
-      instructionSetState(actConfig.instruction.sort((a, b) => a.name > b.name ? 1 : -1))
-    }
+    const newConfig = updateActiveConfigSettings()
     setConfiguration(newConfig)
-    console.log(newConfig)
   }, [configurations])
   
   function handleRollback() {
-    setConfigurations(configs)
+    qConfig.removeSavedConfigs()
+    setConfigurations(qConfig.getConfigs())
   }
 
+  function handleAutocomplete() {
+    const newConfigs = configurations.map(c => {
+      if (c.enabled) {
+        return { ...c, autocomplete: !c.autocomplete };
+      }
+      return c; 
+    });
+    setConfigurations(newConfigs)
+  }
   function save() {
     const actConfig = configuration.file;
     qConfig.setItem('registers_number', actConfig.registers_number);
@@ -179,7 +154,7 @@ export default function ConfigForm({ open, setOpen }) {
     qConfig.setItem('addressing_mode', actConfig.addressing_mode);
     qConfig.setItem('instruction', actConfig.instruction);
     saveConfig()
-    localStorage.setItem('configurations', JSON.stringify(configurations));
+    qConfig.setConfigs(configurations)
   }
 
   function saveConfig() {
@@ -188,55 +163,10 @@ export default function ConfigForm({ open, setOpen }) {
     setOpen(false);
   }
 
-  function getDefaultCellRadio(type) {
-    return getDefaultRadio(type, 'cells')
-  }
-
-  function getDefaultRegisterRadio(type) {
-    return getDefaultRadio(type, 'registers')
-  }
-
-  function getDefaultRadio(type, operand) {
-    return <FormControlLabel
-      value={type.value}
-      control={<Radio color="primary" checked={defaultValue[operand] === type.value} />}
-      label={type.label}
-      disabled={true}
-      onChange={defaultValueHandleChange(operand)}
-      labelPlacement="start"
-    />
-  }
-
-  function getAddressingModeCheckbox(id, label, enabled) {
+  function getQVersion(value, enabled, key) {
     return <FormControlLabel
       control={<Checkbox
-        id={id}
-        checked={enabled}
-        color="primary"
-        disabled={true}
-        onChange={addressingModeHandleChange}
-        name={id} />}
-      label={label}
-      labelPlacement="start"
-    />
-  }
-
-  function getInstructionCheckbox(id, label, enabled) {
-    return <FormControlLabel
-      control={<Checkbox
-        id={id}
-        checked={enabled}
-        color="primary"
-        disabled={true}
-        onChange={instructionHandleChange}
-        name={id} />}
-      label={label}
-      labelPlacement="start"
-    />
-  }
-  function getQVersion(value, enabled) {
-    return <FormControlLabel
-      control={<Checkbox
+        key={key}
         id={value}
         checked={enabled}
         color="primary"
@@ -245,14 +175,6 @@ export default function ConfigForm({ open, setOpen }) {
       label={value}
       labelPlacement="start"
     />
-  }
-
-  function appliesForRegister(type) {
-    return type.appliesForRegister
-  }
-
-  function addConfig() {
-    hiddenFileInput.current.click();
   }
 
   function processFile(event) {
@@ -291,12 +213,21 @@ export default function ConfigForm({ open, setOpen }) {
           <FormControl component="fieldset">
             <FormLabel component="legend">Version Q:</FormLabel>
             <RadioGroup row aria-label="version q" name="version q">
-              {configurations.map(i => getQVersion(i.value, i.enabled))}
+              {configurations.map(i => getQVersion(i.value, i.enabled, i.value))}
             </RadioGroup>
           </FormControl><br />
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <img src={qlayers} alt="Q Layers" style={{ height: '80%', width: '80%', maxWidth: '100%', maxHeight: '100%' }} />
           </div>
+        </DialogContent>
+        <DialogContent>
+          <FormLabel component="legend">Autocompletar:</FormLabel>
+          <Tooltip title="Autocompletar">
+          <Switch 
+            checked={configuration ? configuration.autocomplete : false} 
+            onChange={handleAutocomplete}
+            />
+          </Tooltip>
         </DialogContent>
         <DialogActions>
           <Tooltip title="Vuelve a la configuración por defecto">
