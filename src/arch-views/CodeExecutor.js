@@ -94,6 +94,8 @@ export default function CodeExecutor() {
   const actionMode = qConfig.getItem('actions_mode')
   const CurrentActionMode = useMemo(() => ActionMode.find_modeclass(actionMode), [actionMode])
   const [currentExecutionMode, setCurrentExecutionMode] = useState(EXECUTION_MODE_NORMAL)
+  const configurations = qConfig.getConfigs()
+  const autocomplete = configurations.find(c => c.enabled).autocomplete
   const markerType = {
     error: {
       type: 'error',
@@ -113,6 +115,7 @@ export default function CodeExecutor() {
   useEffect(() => {
     parse_warnings(getCode())
     setResult('')
+    console.log(autocomplete)
   }, [code])
   
   function load_program(routines) {
@@ -424,9 +427,9 @@ export default function CodeExecutor() {
                   fontSize={20}
                   focus={true}
                   setOptions={{
-                    enableBasicAutocompletion: true,
-                    enableLiveAutocompletion: true,
-                    enableSnippets: true
+                    enableBasicAutocompletion: autocomplete,
+                    enableLiveAutocompletion: autocomplete,
+                    enableSnippets: autocomplete
                   }}
               />
             </Box>
