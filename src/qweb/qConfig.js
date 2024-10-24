@@ -13,8 +13,8 @@ const defaultConfigs = [
   { value: 'Q2', enabled: false, autocomplete: false, file: q2 },
   { value: 'Q3', enabled: false, autocomplete: false, file: q3 },
   { value: 'Q4', enabled: false, autocomplete: false, file: q4 },
-  { value: 'Q5', enabled: false, autocomplete: true, file: q5 },
-  { value: 'Q6', enabled: true, autocomplete: true, file: q6 },
+  { value: 'Q5', enabled: false, autocomplete: false, file: q5 },
+  { value: 'Q6', enabled: true, autocomplete: false, file: q6 },
 ];
 class QConfig {
   constructor() {

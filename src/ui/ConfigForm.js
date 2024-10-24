@@ -119,7 +119,9 @@ export default function ConfigForm({ open, setOpen }) {
         return {
           ...c,
           enabled: !c.enabled,
-          autocomplete: (c.value === 'Q5' || c.value === 'Q6') ? true : c.autocomplete
+          autocomplete: (c.value === 'Q5' || c.value === 'Q6') ? false : c.autocomplete
+          //cambio momentaneo hasta saber como hacer que se desactive el autocomplete al inciar cypress
+          //autocomplete: (c.value === 'Q5' || c.value === 'Q6') ? true : c.autocomplete
         };
       }
       return { ...c, enabled: false, autocomplete: false };
@@ -226,6 +228,7 @@ export default function ConfigForm({ open, setOpen }) {
           <Switch 
             checked={configuration ? configuration.autocomplete : false} 
             onChange={handleAutocomplete}
+            id='autocomplete'
             />
           </Tooltip>
         </DialogContent>
