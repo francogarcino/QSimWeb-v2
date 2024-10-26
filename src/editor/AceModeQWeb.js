@@ -105,14 +105,11 @@ export class CustomCompleter {
     // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
     const { routines} = parser.parse_code(session.getValue())
 
-    let prevs = routines.filter(r => r.start_line < pos.row)
-    const current = routines[Math.max(0, prevs.length - 1)]
-
     const withLabels = this.suggests.filter(s => s.label)
-    const matchingInstructions = withLabels.filter(inst => line.includes(inst.instruction));
+    const labeledMatchs = withLabels.filter(inst => line.includes(inst.instruction) && instrucciones.find(i => i.name === inst.instruction).enabled);
 
     // recomendación de etiquetas
-    if (matchingInstructions.length > 0) {
+    if (labeledMatchs.length > 0) {
       this.suggestions_for_labeled(line, callback, routines, pos);
       return;
     }
