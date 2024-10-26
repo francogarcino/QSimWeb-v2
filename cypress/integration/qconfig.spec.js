@@ -127,7 +127,7 @@ describe('Disabled addressing modes', () => {
   describe('Using pop up', () => {
     it('displays correct error', () => {
       cy.get('[id="config-button"]').click()
-      cy.get('[id="IndirectRegister"]').click()
+      cy.get('[id="Q5"]').click()
       cy.get('[id="save-config-button"]').click()
 
       cy.get('[id="ace-editor"]')

@@ -57,4 +57,20 @@ describe('Syntax Validation', function () {
                 assert.strictEqual(1, res.errors.length)
         })
     })
+    describe('Recursive calls detection', function () {
+        it('should detect when a routine calls itself', () => {
+            const res = parser.parse_code("inf: ADD R0, 0x0001 \n CALL inf")
+            assert.strictEqual(1, res.recursives.length)
+            const call = res.recursives[0]
+            assert.strictEqual(2, call.line)
+            assert.strictEqual("inf", call.recursive_call)
+        });
+        it('should detect when a routine would loop without end due to a JMP to its label', () => {
+            const res = parser.parse_code("loop: JMP loop")
+            assert.strictEqual(1, res.recursives.length)
+            const call = res.recursives[0]
+            assert.strictEqual(1, call.line)
+            assert.strictEqual("loop", call.recursive_call)
+        });
+    })
 })

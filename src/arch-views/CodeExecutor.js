@@ -8,17 +8,18 @@ import FlagsPreview from './FlagsPreview.js'
 import Memory from './Memory.js'
 import translator from '../qweb/language/translator.js'
 import parser from '../qweb/language/parser.js'
-import { ImmediateAsTarget, DisabledInstructionError, DisabledRegisterError, DivideByZeroError,
+import {
+  ImmediateAsTarget, DisabledInstructionError, DisabledRegisterError, DivideByZeroError,
   UndefinedCellValueError, UndefinedLabel, DisabledAddressingModeError, IncompleteRoutineError,
-  EmptyStackError } from '../qweb/exceptions.js'
+  EmptyStackError, StackOverflowError
+} from '../qweb/exceptions.js'
 import FlashOnIcon from '@material-ui/icons/FlashOn';
 import FlashAutoIcon from '@material-ui/icons/FlashAuto';
 import OfflineBolt from '@material-ui/icons/OfflineBolt';
 import { useSnackbar } from 'notistack';
 import { ActionType } from '../action-type.js';
-import { toHexa, hexa, getDetails } from '../utils.js';
 import AceEditor from "react-ace";
-import AceModeQWeb from "../editor/AceModeQWeb.js";
+import AceModeQWeb, {CustomCompleter} from "../editor/AceModeQWeb.js";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-tomorrow";
 import FileSaver from 'file-saver';
@@ -68,7 +69,8 @@ const knownErrors = [
   IncompleteRoutineError,
   UndefinedCellValueError,
   UndefinedLabel,
-  ImmediateAsTarget
+  ImmediateAsTarget,
+  StackOverflowError
 ]
 
 export default function CodeExecutor() {
@@ -92,6 +94,8 @@ export default function CodeExecutor() {
   const actionMode = qConfig.getItem('actions_mode')
   const CurrentActionMode = useMemo(() => ActionMode.find_modeclass(actionMode), [actionMode])
   const [currentExecutionMode, setCurrentExecutionMode] = useState(EXECUTION_MODE_NORMAL)
+  const configurations = qConfig.getConfigs()
+  const autocomplete = configurations.find(c => c.enabled).autocomplete
   const markerType = {
     error: {
       type: 'error',
@@ -100,12 +104,18 @@ export default function CodeExecutor() {
     warning: {
       type: 'warning',
       className: 'warning-highlight'
+    },
+    info: {
+      type: 'info',
+      className: 'info-highlight'
     }
   };
+  const completer = new CustomCompleter()
 
   useEffect(() => {
     parse_warnings(getCode())
     setResult('')
+    console.log(autocomplete)
   }, [code])
   
   function load_program(routines) {
@@ -162,8 +172,11 @@ export default function CodeExecutor() {
     try {
       setAceEditorAnnotations([])
       setAceEditorMarkers([])
-      const { routines, errors } = parser.parse_code(codeToParse)
+      const { routines, errors, recursives } = parser.parse_code(codeToParse)
       addNotifications(errors, 'error')
+
+      mark_recursives(recursives)
+
       const hasErrors = errors.some(e => e && e.error);
 
       if(!hasErrors) {
@@ -176,11 +189,53 @@ export default function CodeExecutor() {
     }
   }
 
+  function mark_recursives(calls) {
+    const session = aceEditorRef.current.editor.session;
+    const { type, className } = markerType["info"];
+
+    calls.forEach(ca => {
+
+      const msg = `Autoreferencia a \'${ca.recursive_call}\' en la linea ${ca.line}. Este tipo de código escapa al objetivo didactico del simulador. \n Su ejecución puede fallar por motivos de ejecución o arquitectura. \n`
+
+      setResult(prevState => `${prevState}\n${msg}`)
+    })
+
+    calls.forEach(ca => {
+      setAceEditorAnnotations(prevErrors => [
+        ...prevErrors,
+        {
+          row: ca.line - 1,
+          column: Math.random(),
+          type: type,
+          text: "Autoreferencia"
+        }
+      ]);
+
+      setAceEditorMarkers(prevMarkers => {
+        const line = session.getLine(ca.line - 1);
+        return [
+          ...prevMarkers,
+          {
+            startRow: ca.line - 1,
+            startCol: line.search(/\S/),
+            endRow: ca.line - 1,
+            endCol: line.split("#")[0].lastIndexOf(ca.recursive_call)
+                + ca.recursive_call.length,
+            className: className,
+            type: 'text',
+            inFront: true
+          }
+        ]
+      });
+    })
+  }
+
   function parse_warnings(codeToParse) {
       setAceEditorAnnotations([])
       setAceEditorMarkers([])
-      const { errors } = parser.parse_code(codeToParse)
+      const { errors, recursives } = parser.parse_code(codeToParse)
       addNotifications(errors, 'warning')
+      mark_recursives(recursives)
   }
 
   function addNotifications(errors, type) {
@@ -318,6 +373,7 @@ export default function CodeExecutor() {
   useEffect(() => {
     const customMode = new AceModeQWeb();
     aceEditorRef.current.editor.getSession().setMode(customMode);
+    aceEditorRef.current.editor.completers = [completer]
   }, [])
 
   useEffect(() => {
@@ -371,9 +427,9 @@ export default function CodeExecutor() {
                   fontSize={20}
                   focus={true}
                   setOptions={{
-                    enableBasicAutocompletion: true,
-                    enableLiveAutocompletion: true,
-                    enableSnippets: true
+                    enableBasicAutocompletion: autocomplete,
+                    enableLiveAutocompletion: autocomplete,
+                    enableSnippets: autocomplete
                   }}
               />
             </Box>
