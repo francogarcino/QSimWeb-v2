@@ -59,13 +59,16 @@ export function useTabs() {
   const setCode = useCallback((value) => {
     if (validTab) {
       setTabs(old => {
-        return [...old.filter(tab => tab.name !== tabs[currentTab].name), {
-          ...tabs[currentTab],
+        const updatedTabs = [...old];
+        updatedTabs[currentTab] = {
+          ...updatedTabs[currentTab],
           code: value
-        }].sort((a, b) => a.name > b.name)
-      })
+        };
+        return updatedTabs;
+      });
     }
-  }, [validTab, tabs, currentTab])
+  }, [validTab, currentTab]);
+  
 
   return [<CodeTabs {...{ tabs, addTab, currentTab, setCurrentTab, removeTab, validTab }} />, tabs, validTab ? tabs[currentTab].code : "", setCode]
 }
