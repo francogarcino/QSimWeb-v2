@@ -90,7 +90,7 @@ export default function CodeExecutor() {
   const [aceEditorMarkers, setAceEditorMarkers] = useState([])
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const classes = useStyles();
-  const [TabsCode, tabs, code, setCode] = useTabs()
+  const [TabsCode, tabs, code, setCode] = useTabs();
   const actionMode = qConfig.getItem('actions_mode')
   const CurrentActionMode = useMemo(() => ActionMode.find_modeclass(actionMode), [actionMode])
   const [currentExecutionMode, setCurrentExecutionMode] = useState(EXECUTION_MODE_NORMAL)
@@ -113,11 +113,13 @@ export default function CodeExecutor() {
   const completer = new CustomCompleter()
 
   useEffect(() => {
-    parse_warnings(getCode())
-    setResult('')
-    console.log(autocomplete)
+    const timer = setTimeout(() => {
+      parse_warnings(getCode());
+      setResult('');
+    }, 1500);
+    return () => clearTimeout(timer);
   }, [code])
-  
+
   function load_program(routines) {
     computer.load_many(routines)
   }
@@ -190,7 +192,7 @@ export default function CodeExecutor() {
   }
 
   function mark_recursives(calls) {
-    const session = aceEditorRef.current.editor.session;
+    const session = aceEditorRef.current.editor.getSession()
     const { type, className } = markerType["info"];
 
     calls.forEach(ca => {
@@ -239,7 +241,7 @@ export default function CodeExecutor() {
   }
 
   function addNotifications(errors, type) {
-    const session = aceEditorRef.current.editor.session;
+    const session = aceEditorRef.current.editor.getSession()
     const typeOfMarker = markerType[type];
     const { result } = errors.reduce((acc, e) => {
       const { result } = acc;
@@ -372,7 +374,9 @@ export default function CodeExecutor() {
 
   useEffect(() => {
     const customMode = new AceModeQWeb();
-    aceEditorRef.current.editor.getSession().setMode(customMode);
+    aceEditorRef.current.editor.getSession().setMode(customMode);  
+    const savedCode = qConfig.getCode()
+    aceEditorRef.current.editor.getSession().setValue(savedCode ? savedCode : '');
     aceEditorRef.current.editor.completers = [completer]
   }, [])
 

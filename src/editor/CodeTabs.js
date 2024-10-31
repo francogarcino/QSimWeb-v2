@@ -6,6 +6,8 @@ import GetApp from '@material-ui/icons/GetApp';
 import FileSaver from 'file-saver';
 import { useSnackbar } from 'notistack';
 import { FileValidator, codeTabsFileValidators } from '../FileValidator'
+import SaveMenu from '../ui/SaveMenu'
+import qConfig from '../qweb/qConfig'
 
 const useStyles = makeStyles((theme) => ({
   tab: {
@@ -106,6 +108,16 @@ export default function CodeTabs({ tabs, addTab, currentTab, setCurrentTab, remo
     var blob = new Blob([code], {type: "text/plain;charset=utf-8"});
     FileSaver.saveAs(blob, tabName + ".txt");
   }
+  function handleOption(tab, option) {
+    if (option === 'save') {
+      const code = tabs.find( t => t.name === tab.name).code
+      qConfig.setCode(code)
+    } else if (option === 'download') {
+      saveTabAsTxt(tab.name);
+    } else if (option === 'clear') {
+      qConfig.removeCode()
+    }
+  }
 
   useEffect(() => {
     if (!validTab) {
@@ -124,7 +136,8 @@ export default function CodeTabs({ tabs, addTab, currentTab, setCurrentTab, remo
         {tabs.map((tab, index) => {
           return <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }} >
             <Tab className={classes.tab} key={tab.name} label={tab.name} onClick={() => setCurrentTab(index)} />
-            <GetApp style={{ fontSize: "13px", cursor: "pointer", color: "primary" }} onClick={() => saveTabAsTxt(tab.name)} />
+            { /*<GetApp style={{ fontSize: "13px", cursor: "pointer", color: "primary" }} onClick={() => saveTabAsTxt(tab.name)} /> */ }
+            <SaveMenu handle={(key) => handleOption(tab, key)}/>
             {!tab.default && <CloseOutlinedIcon style={{ fontSize: "13px", cursor: "pointer", color: "red" }} onClick={() => removeTab(tab.name)} />}
           </div>
         })}
