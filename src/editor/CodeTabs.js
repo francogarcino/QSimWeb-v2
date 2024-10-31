@@ -112,10 +112,13 @@ export default function CodeTabs({ tabs, addTab, currentTab, setCurrentTab, remo
     if (option === 'save') {
       const code = tabs.find( t => t.name === tab.name).code
       qConfig.setCode(code)
+      enqueueSnackbar('El código de la sesión se guardo correctamente', SNACKBAR_CONFIG)
     } else if (option === 'download') {
       saveTabAsTxt(tab.name);
+      enqueueSnackbar('Se descargó el archivo correctamente', SNACKBAR_CONFIG)
     } else if (option === 'clear') {
       qConfig.removeCode()
+      enqueueSnackbar('El código de la sesión se eliminó', SNACKBAR_CONFIG)
     }
   }
 
