@@ -5,9 +5,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
 
 const options = [
-    { key: 'save', label: 'Save code session' },
-    { key: 'clear', label: 'Clear code session' },
-    { key: 'download', label: 'Download to file' }
+    { key: 'save', label: 'Guardar código de sesión' },
+    { key: 'clear', label: 'Eliminar código de sesión' },
+    { key: 'download', label: 'Descargar archivo' }
 ];
 
 const ITEM_HEIGHT = 48;
