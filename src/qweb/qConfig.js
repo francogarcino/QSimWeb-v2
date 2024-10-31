@@ -66,6 +66,7 @@ class QConfig {
     return localStorage.getItem('code')
   }
   removeCode() {
+    this.code = '';
     localStorage.removeItem('code')
   }
   removeSavedConfigs() {
