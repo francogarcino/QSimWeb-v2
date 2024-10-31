@@ -56,6 +56,7 @@ export default function SaveMenu({ handle = () => {} }) {
         {options.map((option) => (
           <MenuItem
           key={option.key}
+          id={option.key}
           onClick={() => handleClose(option.key)}
         >
           {option.label}
