@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useTheme } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import Refresh from '@material-ui/icons/Refresh';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
@@ -13,7 +12,6 @@ import Popper from '@material-ui/core/Popper';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 import {isMobile} from 'react-device-detect';
-import IconButton from '@material-ui/core/IconButton';
 
 const useStyles = makeStyles((theme) => ({
   fab: (isMobile ? {
@@ -23,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
   }: {}),
 }));
 
-export default function ExecutionButton({ refreshExec, ...props }) {
+export default function ExecutionButton(props) {
   const theme = useTheme()
   const anchorRef = React.useRef(null)
   const [open, setOpen] = React.useState(false)
@@ -90,11 +88,6 @@ export default function ExecutionButton({ refreshExec, ...props }) {
             </Grow>
           )}
         </Popper>
-        { (currentExecution === 'Ejecutar una instrucción' || currentExecution === 'Ejecutar una instrucción detallada') 
-        && 
-        <IconButton onClick={refreshExec}>
-          <Refresh/>
-        </IconButton>  }
       </Grid>
     </Grid>
   )
