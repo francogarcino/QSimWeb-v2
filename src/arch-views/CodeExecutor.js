@@ -356,6 +356,18 @@ export default function CodeExecutor() {
     return enqueueSnackbar(action_display, { ...SNACKBAR_CONFIG, ...config })
   }
 
+  function refreshExecution() {
+    setProgramLoaded(false)
+    setProgramFinished(false)
+    setActions([])
+    setHistoricActions([])
+    computer.restart()
+    setRegisters(computer.get_updated_registers())
+    setSpecialRegisters(computer.get_updated_special_registers())
+    setFlags(computer.get_updated_flags())
+    setMemory(getMemory())
+    setResult("")
+  }
   function getMemory() {
     function byCell(a, b) {
       return a.cell - b.cell
@@ -446,6 +458,7 @@ export default function CodeExecutor() {
               <Grid container className={classes.root} spacing={2} direction="row" alignItems="flex-start">
                 <Grid item >
                   <ExecutionButton
+                      refreshExec={refreshExecution}
                       {...{
                         'Ejecutar': { onClick: execute, icon: <FlashAutoIcon />, aria_label: 'Ejecutar todo el programa' },
                         'Ejecutar una instrucción': { onClick: execute_cycle, icon: <FlashOnIcon />, aria_label: 'Ejecutar una instrucción' },
