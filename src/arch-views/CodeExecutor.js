@@ -46,6 +46,9 @@ import Button from "@material-ui/core/Button";
 import CloseIcon from "@material-ui/icons/Close";
 import { ResultTitle } from "../ui/ResultTitle.js";
 import "../App.css";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import Refresh from "@material-ui/icons/Refresh";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -119,7 +122,6 @@ export default function CodeExecutor() {
   );
   const configurations = qConfig.getConfigs();
   const autocomplete = configurations.find((c) => c.enabled).autocomplete;
-  const [routines, setRoutines] = useState([]);
   const markerType = {
     error: {
       type: "error",
@@ -153,7 +155,6 @@ export default function CodeExecutor() {
     let parsed_code = parse_code(getCode());
     let routines = translator.translate_code(parsed_code);
     load_program(routines);
-    setRoutines(routines);
   }
 
   function execution_on_error(e) {
@@ -405,6 +406,18 @@ export default function CodeExecutor() {
     return sp;
   }
 
+  function refreshExecution() {
+    setProgramLoaded(false);
+    setProgramFinished(false);
+    setActions([]);
+    setHistoricActions([]);
+    computer.restart();
+    setRegisters(computer.get_updated_registers());
+    setSpecialRegisters(computer.get_updated_special_registers());
+    setFlags(computer.get_updated_flags());
+    setMemory(getMemory());
+    setResult("");
+  }
   function getMemory() {
     function byCell(a, b) {
       return a.cell - b.cell;
@@ -521,10 +534,11 @@ export default function CodeExecutor() {
               className={classes.root}
               spacing={2}
               direction="row"
-              alignItems="flex-start"
+              alignItems="center"
             >
               <Grid item>
                 <ExecutionButton
+                  refreshExec={refreshExecution}
                   {...{
                     Ejecutar: {
                       onClick: execute,
@@ -544,6 +558,16 @@ export default function CodeExecutor() {
                   }}
                 />
               </Grid>
+              {(currentExecutionMode == EXECUTION_MODE_ONE_INSTRUCTION ||
+                currentExecutionMode == EXECUTION_MODE_DETAILED) && (
+                <Grid item>
+                  <Tooltip title="Resetear ejecución">
+                    <IconButton onClick={refreshExecution}>
+                      <Refresh />
+                    </IconButton>
+                  </Tooltip>
+                </Grid>
+              )}
               {
                 <Grid item className={classes.fab}>
                   <PaginationTable
