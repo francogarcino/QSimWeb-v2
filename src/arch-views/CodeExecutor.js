@@ -27,9 +27,9 @@ import {
   EmptyStackError,
   StackOverflowError,
 } from "../qweb/exceptions.js";
-import FlashOnIcon from "@material-ui/icons/FlashOn";
-import FlashAutoIcon from "@material-ui/icons/FlashAuto";
-import OfflineBolt from "@material-ui/icons/OfflineBolt";
+import PlayArrow from "@material-ui/icons/PlayArrow";
+import PlaylistPlay from "@material-ui/icons/PlaylistPlay";
+import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
 import { useSnackbar } from "notistack";
 import { ActionType } from "../action-type.js";
 import AceEditor from "react-ace";
@@ -544,17 +544,17 @@ export default function CodeExecutor() {
                   {...{
                     Ejecutar: {
                       onClick: execute,
-                      icon: <FlashAutoIcon />,
+                      icon: <PlayArrow />,
                       aria_label: "Ejecutar todo el programa",
                     },
                     "Ejecutar una instrucción": {
                       onClick: execute_cycle,
-                      icon: <FlashOnIcon />,
+                      icon: <PlaylistPlay />,
                       aria_label: "Ejecutar una instrucción",
                     },
                     "Ejecutar una instrucción detallada": {
                       onClick: execute_cycle_detailed,
-                      icon: <OfflineBolt />,
+                      icon: <PlaylistAdd />,
                       aria_label: "Ejecutar una instrucción detallada",
                     },
                   }}
@@ -565,7 +565,7 @@ export default function CodeExecutor() {
                 currentExecutionMode == EXECUTION_MODE_DETAILED) && (
                 <Grid item>
                   <Tooltip title="Resetear ejecución">
-                    <IconButton onClick={refreshExecution}>
+                    <IconButton onClick={refreshExecution} disabled={!result}>
                       <Refresh />
                     </IconButton>
                   </Tooltip>
