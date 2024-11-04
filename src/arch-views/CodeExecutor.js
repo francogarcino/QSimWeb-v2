@@ -398,8 +398,8 @@ export default function CodeExecutor() {
   }
 
   function setRegistersAndFlags() {
-    setRegisters(computer.get_updated_registers(registers));
-    const sp = computer.get_updated_special_registers(specialRegisters)
+    const { specialRegisters: sp, updatedRegisters: r } = computer.get_updated_special_registers(registers, specialRegisters);
+    setRegisters(r.length > 0 ? r : computer.get_updated_registers());
     setSpecialRegisters(sp);
     setFlags(computer.get_updated_flags());
     return sp;
