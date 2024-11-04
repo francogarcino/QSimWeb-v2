@@ -28,7 +28,7 @@ export default function SaveMenu({ handle = () => {} }) {
   return (
     <div>
       <Tooltip title="Guardar código de sesión">
-        <IconButton onClick={() => handleClose("save")}>
+        <IconButton id="save-button" onClick={() => handleClose("save")}>
           <Save></Save>
         </IconButton>
       </Tooltip>

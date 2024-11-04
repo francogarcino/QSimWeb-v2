@@ -200,7 +200,7 @@ class Computer {
   }
 
   updatedRegister(id, value, registers) {
-    const register = registers?.find((r) => r.id === id);
+    const register = registers.find((r) => r.id === id);
     return Boolean(register) && register.value !== value;
   }
 

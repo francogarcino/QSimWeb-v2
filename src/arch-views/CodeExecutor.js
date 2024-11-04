@@ -49,6 +49,7 @@ import "../App.css";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import Refresh from "@material-ui/icons/Refresh";
+import ErrorTable from "./ErrorTable.js";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -137,10 +138,12 @@ export default function CodeExecutor() {
     },
   };
   const completer = new CustomCompleter();
+  const [errors, setErrors] = useState([]);
 
   useEffect(() => {
     parse_warnings(getCode());
     setResult("");
+    setErrors([]);
   }, [code]);
 
   function load_program(routines) {
@@ -212,6 +215,8 @@ export default function CodeExecutor() {
 
       if (!hasErrors) {
         return routines;
+      } else {
+        setErrors(errors);
       }
     } catch (e) {
       //addError(e)
@@ -472,7 +477,9 @@ export default function CodeExecutor() {
   function validateCode() {
     parse_code(getCode());
   }
-
+  function goToLine(index) {
+    aceEditorRef.current.editor.gotoLine(index+1);
+  }
   function saveProgramAsTxt() {
     var blob = new Blob([getCode()], { type: "text/plain;charset=utf-8" });
     FileSaver.saveAs(blob, "myQwebCode.txt");
@@ -585,23 +592,27 @@ export default function CodeExecutor() {
                 </Grid>
               }
             </Grid>
-            <TextField
-              id="results-box-id"
-              InputProps={{
-                classes: {
-                  input: classes.results,
-                },
-              }}
-              multiline
-              rows={result.split("\n").length + 1}
-              margin="normal"
-              variant="outlined"
-              fullWidth
-              value={result}
-            />
-            {/*{registers.length > 0 && */}
-            {result && (
+            {errors.length > 0 ? (
+              <Grid item xs={12} md={6}>
+                <ErrorTable errors={errors} onClick={goToLine}/>{" "}
+              </Grid>
+            ) : result ? (
               <Grid container spacing={1}>
+                <TextField
+                  id="results-box-id"
+                  InputProps={{
+                    classes: {
+                      input: classes.results,
+                    },
+                  }}
+                  multiline
+                  rows={result.split("\n").length + 1}
+                  margin="normal"
+                  variant="outlined"
+                  fullWidth
+                  value={result}
+                />
+
                 <Grid item xs={isMobile ? 12 : 4}>
                   <ResultTitle title="Registros"></ResultTitle>
                   <Registers registers={registers} />
@@ -631,7 +642,7 @@ export default function CodeExecutor() {
                   </div>
                 </Grid>
               </Grid>
-            )}
+            ) : null}
           </Box>
         </div>
       </div>

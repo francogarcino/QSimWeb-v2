@@ -26,16 +26,20 @@ export default function ExecutionButton(props) {
       className={classes.fab}
     >
       <Grid item xs={12}>
-        {Object.keys(props).map((key) => (
-          <Tooltip key={key} title={props[key].aria_label}>
-            <IconButton
-              onClick={props[key].onClick}
-              aria-label={props[key].aria_label}
-            >
-              {props[key].icon}
-            </IconButton>
-          </Tooltip>
-        ))}
+        {Object.keys(props).map((optionKey) => {
+          const option = props[optionKey]; 
+          return (
+            <Tooltip key={optionKey} title={option.aria_label}>
+              <IconButton
+                id={optionKey + "-button-id"}
+                onClick={option.onClick}
+                aria-label={option.aria_label}
+              >
+                {option.icon}
+              </IconButton>
+            </Tooltip>
+          );
+        })}
       </Grid>
     </Grid>
   );
