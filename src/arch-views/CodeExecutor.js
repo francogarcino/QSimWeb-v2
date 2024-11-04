@@ -399,7 +399,8 @@ export default function CodeExecutor() {
   }
 
   function setRegistersAndFlags() {
-    const { specialRegisters: sp, updatedRegisters: r } = computer.get_updated_special_registers(registers, specialRegisters);
+    const { specialRegisters: sp, updatedRegisters: r } =
+      computer.get_updated_special_registers(registers, specialRegisters);
     setRegisters(r.length > 0 ? r : computer.get_updated_registers());
     setSpecialRegisters(sp);
     setFlags(computer.get_updated_flags());
@@ -412,8 +413,10 @@ export default function CodeExecutor() {
     setActions([]);
     setHistoricActions([]);
     computer.restart();
-    setRegisters(computer.get_updated_registers());
-    setSpecialRegisters(computer.get_updated_special_registers());
+    const { specialRegisters: sp, updatedRegisters: r } =
+      computer.get_updated_special_registers(registers, specialRegisters);
+    setRegisters(r.length > 0 ? r : computer.get_updated_registers());
+    setSpecialRegisters(sp);
     setFlags(computer.get_updated_flags());
     setMemory(getMemory());
     setResult("");
@@ -538,7 +541,6 @@ export default function CodeExecutor() {
             >
               <Grid item>
                 <ExecutionButton
-                  refreshExec={refreshExecution}
                   {...{
                     Ejecutar: {
                       onClick: execute,
@@ -558,7 +560,8 @@ export default function CodeExecutor() {
                   }}
                 />
               </Grid>
-              {(currentExecutionMode == EXECUTION_MODE_ONE_INSTRUCTION ||
+              {(currentExecutionMode == EXECUTION_MODE_NORMAL ||
+                currentExecutionMode == EXECUTION_MODE_ONE_INSTRUCTION ||
                 currentExecutionMode == EXECUTION_MODE_DETAILED) && (
                 <Grid item>
                   <Tooltip title="Resetear ejecución">
