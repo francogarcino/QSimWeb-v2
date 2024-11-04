@@ -174,7 +174,7 @@ class Computer {
     return Boolean(register) && register.value !== value
   }
 
-  get_updated_registers() {
+  get_updated_registers(registers) {
     return(
         this.state.registers.map(r => {
           return {
@@ -182,19 +182,19 @@ class Computer {
             id: `R${r.id}`,
             value: hexa(r.value),
             details: getDetails(r.value),
-            updated: this.updatedRegister(`R${r.id}`, hexa(r.value), this.state.registers),
+            updated: this.updatedRegister(`R${r.id}`, hexa(r.value), registers),
           }
         })
     )
   }
 
-  get_updated_special_registers() {
+  get_updated_special_registers(specialRegisters) {
     return([
       {
         id: "SP",
         value: toHexa(computer.state.SP),
         details: getDetails(computer.state.SP),
-        updated: this.updatedRegister("SP", toHexa(computer.state.SP), [this.state.PC, this.state.SP, this.state.IR]),
+        updated: this.updatedRegister("SP", toHexa(computer.state.SP), specialRegisters),
       },
       {
         id: "PC",

@@ -73,6 +73,7 @@ const knownErrors = [
   StackOverflowError
 ]
 
+
 export default function CodeExecutor() {
   const theme = useTheme()
   const [result, setResult] = useState("")
@@ -340,9 +341,7 @@ export default function CodeExecutor() {
   }
 
   function display_results() {
-    setRegisters(computer.get_updated_registers())
-    setSpecialRegisters(computer.get_updated_special_registers())
-    setFlags(computer.get_updated_flags())
+    initializeRegistersAndFlags()
     setMemory(getMemory())
     setResult("La ejecución fue exitosa")
   }
@@ -354,6 +353,12 @@ export default function CodeExecutor() {
         </Button>
     )
     return enqueueSnackbar(action_display, { ...SNACKBAR_CONFIG, ...config })
+  }
+
+  function initializeRegistersAndFlags() {
+    setRegisters(computer.get_updated_registers(registers))
+    setSpecialRegisters(computer.get_updated_special_registers(specialRegisters))
+    setFlags(computer.get_updated_flags())
   }
 
   function getMemory() {
@@ -378,6 +383,7 @@ export default function CodeExecutor() {
     const savedCode = qConfig.getCode()
     aceEditorRef.current.editor.getSession().setValue(savedCode ? savedCode : '');
     aceEditorRef.current.editor.completers = [completer]
+    initializeRegistersAndFlags()
   }, [])
 
   useEffect(() => {
@@ -479,7 +485,8 @@ export default function CodeExecutor() {
                   fullWidth
                   value={result}
               />
-              {registers.length > 0 &&
+              {/*{registers.length > 0 && */}
+              { result &&
                   (<Grid container spacing={1}>
                     <Grid item xs={isMobile ? 12 : 4}>
                       <ResultTitle title="Registros"></ResultTitle>
