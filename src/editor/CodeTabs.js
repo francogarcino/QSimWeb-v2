@@ -90,6 +90,7 @@ export function useTabs() {
       {...{ tabs, addTab, currentTab, setCurrentTab, removeTab, validTab }}
     />,
     tabs,
+    currentTab,
     validTab ? tabs[currentTab].code : "",
     setCode,
   ];

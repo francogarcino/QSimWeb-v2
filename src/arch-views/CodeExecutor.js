@@ -112,7 +112,7 @@ export default function CodeExecutor() {
   const [aceEditorMarkers, setAceEditorMarkers] = useState([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
-  const [TabsCode, tabs, code, setCode] = useTabs();
+  const [TabsCode, tabs, currentTab, code, setCode] = useTabs();
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
     () => ActionMode.find_modeclass(actionMode),
@@ -154,8 +154,12 @@ export default function CodeExecutor() {
     return tabs.map((tab) => tab.code).join("\n");
   }
 
+  function getCodeFromCurrent() {
+    return (tabs[currentTab]).code
+  }
+
   function parse_and_load_program() {
-    let parsed_code = parse_code(getCode());
+    let parsed_code = parse_code(getCodeFromCurrent());
     let routines = translator.translate_code(parsed_code);
     load_program(routines);
   }
