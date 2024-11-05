@@ -52,6 +52,11 @@ export function useTabs() {
       code: "",
       default: true,
     },
+    {
+      name: "Biblioteca",
+      code: "",
+      default: true,
+    },
   ]);
 
   const validTab = useMemo(
