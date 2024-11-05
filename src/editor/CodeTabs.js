@@ -48,7 +48,7 @@ export function useTabs() {
   const [currentTab, setCurrentTab] = useState(0);
   const [tabs, setTabs] = useState([
     {
-      name: "Main",
+      name: "Principal",
       code: "",
       default: true,
     },
