@@ -100,7 +100,7 @@ class Parser {
 
 export class InvalidInstructionError extends Error {
     constructor(invalidCode, index) {
-        super(`La linea ${index + 1} no es una instrucción valida o esta mal formulada: \n ${invalidCode} `)
+        super(`La línea ${index + 1} no es una instrucción válida o está mal formulada: \n ${invalidCode} `)
         this.shorterMessage = "Instrucción no valida"
         this.invalidCode = invalidCode
         this.line = index
@@ -109,7 +109,7 @@ export class InvalidInstructionError extends Error {
 
 export class IncompleteInstructionError extends Error {
     constructor(invalidCode, index) {
-        super(`La instrucción de la linea ${index + 1} esta incompleta: \n ${invalidCode} `)
+        super(`La instrucción de la linea ${index + 1} está incompleta: \n ${invalidCode} `)
         this.shorterMessage = "Instrucción incompleta"
         this.invalidCode = invalidCode
         this.line = index
@@ -120,7 +120,7 @@ export class ParserError extends Error {
     constructor(invalidCode, index, line) {
         const startsWithInstruction = instructions.some(instruction => invalidCode.startsWith(instruction));
         if (index === undefined && startsWithInstruction) {
-            super(`La instrucción esta incompleta: \n${invalidCode}\n${" ".repeat(index)}^`)
+            super(`La instrucción está incompleta: \n${invalidCode}\n${" ".repeat(index)}^`)
             this.shorterMessage = `Instrucción incompleta: \n${invalidCode}\n${" ".repeat(index)}^`
             this.invalidCode = invalidCode
             this.index = index

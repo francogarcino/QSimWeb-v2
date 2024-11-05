@@ -27,6 +27,7 @@ class QConfig {
     const savedConfigs =localStorage.getItem('configurations');
       savedConfigs ? this.configs = JSON.parse(savedConfigs) : 
       this.configs = defaultConfigs
+    this.code = ''
   }
 
   setItem(key, value) {
@@ -56,6 +57,17 @@ class QConfig {
   setConfigs(configs) {
     localStorage.setItem('configurations', JSON.stringify(configs));
     this.configs = configs
+  }
+  setCode(code) {
+    localStorage.setItem('code', code);
+    this.code = code
+  }
+  getCode() {
+    return localStorage.getItem('code')
+  }
+  removeCode() {
+    this.code = '';
+    localStorage.removeItem('code')
   }
   removeSavedConfigs() {
     localStorage.removeItem('configurations')
