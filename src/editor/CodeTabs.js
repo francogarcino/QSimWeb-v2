@@ -89,6 +89,8 @@ export function useTabs() {
     }
   }, [validTab, currentTab]);
 
+  const getLibrary = tabs.find(t => t.name === "Biblioteca").code;
+
 
   return [
     <CodeTabs
@@ -97,6 +99,7 @@ export function useTabs() {
     tabs,
     currentTab,
     validTab ? tabs[currentTab].code : "",
+    getLibrary,
     setCode,
   ];
 }

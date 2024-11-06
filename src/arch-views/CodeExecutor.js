@@ -112,7 +112,7 @@ export default function CodeExecutor() {
   const [aceEditorMarkers, setAceEditorMarkers] = useState([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
-  const [TabsCode, tabs, currentTab, code, setCode] = useTabs();
+  const [TabsCode, tabs, currentTab, code, getLibrary, setCode] = useTabs();
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
     () => ActionMode.find_modeclass(actionMode),
@@ -141,7 +141,7 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
-    parse_warnings(getCode());
+    parse_warnings(getCodeFromCurrent());
     setResult("");
     setErrors([]);
   }, [code]);
@@ -159,7 +159,8 @@ export default function CodeExecutor() {
   }
 
   function parse_and_load_program() {
-    let parsed_code = parse_code(getCodeFromCurrent());
+    let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+    let parsed_code = parse_code(code_with_libraries);
     let routines = translator.translate_code(parsed_code);
     load_program(routines);
   }
@@ -479,7 +480,7 @@ export default function CodeExecutor() {
   };
 
   function validateCode() {
-    parse_code(getCode());
+    parse_code(getCodeFromCurrent());
   }
   function goToLine(index) {
     aceEditorRef.current.editor.gotoLine(index+1);
