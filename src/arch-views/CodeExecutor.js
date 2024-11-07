@@ -159,7 +159,7 @@ export default function CodeExecutor() {
   }
 
   function parse_and_load_program() {
-    // add validation for library
+    parser.validate_commons_code(getLibrary)
     let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
     let parsed_code = parse_code(code_with_libraries);
     let routines = translator.translate_code(parsed_code);

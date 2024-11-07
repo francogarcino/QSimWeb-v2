@@ -71,6 +71,14 @@ class Parser {
         }, {routines: [new Routine(assembly_cell)], errors: [], recursives: []})
     }
 
+    validate_commons_code(code) {
+        let code_lines = code.split(/\r\n|\r|\n/)
+        let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
+
+        let regex = /^\[assemble:/i
+        console.log(regex.test(first_with_code));
+    }
+
     update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index) {
         if (shouldUpdateRoutine) {
             shouldUpdateRoutine = false
