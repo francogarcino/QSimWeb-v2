@@ -54,7 +54,10 @@ export function useTabs() {
     },
     {
       name: "Biblioteca",
-      code: "",
+      code: "# = ¡AVISO DE USO! ===== \n" + 
+            "# Todas las rutinas de este archivo \n" + 
+            "# deben aclarar donde se ensamblan con \n" + 
+            "# [assemble: 0xHHHH]",
       default: true,
     },
   ]);

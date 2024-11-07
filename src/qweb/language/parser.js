@@ -37,7 +37,6 @@ class Parser {
         let code_lines = codeToParse.split(/\r\n|\r|\n/)
         //TODO: agregar un chequeo de que si codeToParse es '' lance una Exception
 
-        // let currentRoutine = ""
         let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
         let currentRoutine = (first_with_code !== undefined && first_with_code.includes(":")) ? first_with_code.split(":")[0] : ""
         let shouldUpdateRoutine = true
