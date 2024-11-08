@@ -14,7 +14,7 @@ import PaginationTable from "./PaginationTable.js";
 import FlagsPreview from "./FlagsPreview.js";
 import Memory from "./Memory.js";
 import translator from "../qweb/language/translator.js";
-import parser from "../qweb/language/parser.js";
+import parser, { CommonsTabError } from "../qweb/language/parser.js";
 import {
   ImmediateAsTarget,
   DisabledInstructionError,
@@ -91,6 +91,7 @@ const knownErrors = [
   UndefinedLabel,
   ImmediateAsTarget,
   StackOverflowError,
+  CommonsTabError
 ];
 
 export default function CodeExecutor() {
@@ -159,6 +160,8 @@ export default function CodeExecutor() {
   }
 
   function parse_and_load_program() {
+    console.log('asd', getLibrary);
+    
     parser.validate_commons_code(getLibrary)
     let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
     let parsed_code = parse_code(code_with_libraries);
@@ -167,6 +170,8 @@ export default function CodeExecutor() {
   }
 
   function execution_on_error(e) {
+    console.log(e);
+
     let alertConfig = { variant: "error" };
     qweb_restart();
     if (knownErrors.some((error) => e instanceof error))
