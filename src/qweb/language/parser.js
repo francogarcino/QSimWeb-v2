@@ -37,7 +37,6 @@ class Parser {
         let code_lines = codeToParse.split(/\r\n|\r|\n/)
         //TODO: agregar un chequeo de que si codeToParse es '' lance una Exception
 
-        // let currentRoutine = ""
         let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
         let currentRoutine = (first_with_code !== undefined && first_with_code.includes(":")) ? first_with_code.split(":")[0] : ""
         let shouldUpdateRoutine = true
@@ -72,6 +71,24 @@ class Parser {
         }, {routines: [new Routine(assembly_cell)], errors: [], recursives: []})
     }
 
+    validate_commons_code(code) {
+        let code_lines = code.split(/\r\n|\r|\n/);
+        let without_comments_or_blanks = code_lines.filter(line => !line.trim().startsWith("#") && line.trim() !== '')
+        
+        if (without_comments_or_blanks.length === 0) {
+            return;
+        }
+
+        if (!this.validate_start_with_assemble(without_comments_or_blanks[0])) {
+            throw new CommonsTabError();
+        }
+    }
+
+    validate_start_with_assemble(code) {
+        let regex = /^\[assemble:/i;
+        return regex.test(code)
+    }
+
     update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index) {
         if (shouldUpdateRoutine) {
             shouldUpdateRoutine = false
@@ -95,6 +112,12 @@ class Parser {
                 line: index + 1
             })
         }
+    }
+}
+
+export class CommonsTabError extends Error {
+    constructor() {
+        super("Todas las rutinas de la biblioteca deben explicitar donde se ensamblan")
     }
 }
 

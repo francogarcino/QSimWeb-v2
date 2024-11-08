@@ -14,7 +14,7 @@ import PaginationTable from "./PaginationTable.js";
 import FlagsPreview from "./FlagsPreview.js";
 import Memory from "./Memory.js";
 import translator from "../qweb/language/translator.js";
-import parser from "../qweb/language/parser.js";
+import parser, { CommonsTabError } from "../qweb/language/parser.js";
 import {
   ImmediateAsTarget,
   DisabledInstructionError,
@@ -91,6 +91,7 @@ const knownErrors = [
   UndefinedLabel,
   ImmediateAsTarget,
   StackOverflowError,
+  CommonsTabError
 ];
 
 export default function CodeExecutor() {
@@ -112,7 +113,7 @@ export default function CodeExecutor() {
   const [aceEditorMarkers, setAceEditorMarkers] = useState([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
-  const [TabsCode, tabs, code, setCode] = useTabs();
+  const [TabsCode, tabs, currentTab, code, getLibrary, setCode] = useTabs();
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
     () => ActionMode.find_modeclass(actionMode),
@@ -141,7 +142,7 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
-    parse_warnings(getCode());
+    parse_warnings(getCodeFromCurrent());
     setResult("");
     setErrors([]);
   }, [code]);
@@ -154,13 +155,21 @@ export default function CodeExecutor() {
     return tabs.map((tab) => tab.code).join("\n");
   }
 
+  function getCodeFromCurrent() {
+    return (tabs[currentTab]).code
+  }
+
   function parse_and_load_program() {
-    let parsed_code = parse_code(getCode());
+    parser.validate_commons_code(getLibrary)
+    let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+    let parsed_code = parse_code(code_with_libraries);
     let routines = translator.translate_code(parsed_code);
     load_program(routines);
   }
 
   function execution_on_error(e) {
+    console.log(e);
+
     let alertConfig = { variant: "error" };
     qweb_restart();
     if (knownErrors.some((error) => e instanceof error))
@@ -475,7 +484,7 @@ export default function CodeExecutor() {
   };
 
   function validateCode() {
-    parse_code(getCode());
+    parse_code(getCodeFromCurrent());
   }
   function goToLine(index) {
     aceEditorRef.current.editor.gotoLine(index+1);

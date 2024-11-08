@@ -48,8 +48,16 @@ export function useTabs() {
   const [currentTab, setCurrentTab] = useState(0);
   const [tabs, setTabs] = useState([
     {
-      name: "Main",
+      name: "Principal",
       code: "",
+      default: true,
+    },
+    {
+      name: "Biblioteca",
+      code: "# = ¡AVISO DE USO! ===== \n" + 
+            "# Todas las rutinas de este archivo \n" + 
+            "# deben aclarar donde se ensamblan con \n" + 
+            "# [assemble: 0xHHHH]",
       default: true,
     },
   ]);
@@ -71,29 +79,30 @@ export function useTabs() {
     });
   }
 
-  const setCode = useCallback(
-    (value) => {
-      if (validTab) {
-        setTabs((old) => {
-          return [
-            ...old.filter((tab) => tab.name !== tabs[currentTab].name),
-            {
-              ...tabs[currentTab],
-              code: value,
-            },
-          ].sort((a, b) => a.name > b.name);
-        });
-      }
-    },
-    [validTab, tabs, currentTab]
-  );
+  const setCode = useCallback((value) => {
+    if (validTab) {
+      setTabs(old => {
+        const updatedTabs = [...old];
+        updatedTabs[currentTab] = {
+          ...updatedTabs[currentTab],
+          code: value
+        };
+        return updatedTabs;
+      });
+    }
+  }, [validTab, currentTab]);
+
+  const getLibrary = tabs.find(t => t.name === "Biblioteca").code;
+
 
   return [
     <CodeTabs
       {...{ tabs, addTab, currentTab, setCurrentTab, removeTab, validTab }}
     />,
     tabs,
+    currentTab,
     validTab ? tabs[currentTab].code : "",
+    getLibrary,
     setCode,
   ];
 }
