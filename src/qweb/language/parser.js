@@ -69,14 +69,16 @@ class Parser {
             }
             return { routines, errors, recursives };
         }, { routines: [new Routine(assembly_cell)], errors: [], recursives: [] });
-    
-        const names = result.routines.map(r => r.name);
-        const uniqueNames = new Set(names);
-        if (names.length !== uniqueNames.size) {
-            throw new Error("Definición multiple");
-        }
-    
+
         return result;
+    }
+
+    validate_duplicated(code) {
+        const names = code.map(r => r.name);
+        const uniqueNames = new Set(names);
+        if (names.length > uniqueNames.size) {
+            throw new DuplicatedNameError();
+        }
     }
 
     validate_empty_code(code) {
@@ -131,9 +133,11 @@ class Parser {
     }
 }
 
-export class CommonsTabError extends Error {
-    constructor() { super("Todas las rutinas de la biblioteca deben explicitar donde se ensamblan") }
-}
+export class DuplicatedNameError extends Error { constructor() { super(`Alguna rutina esta definida más de una vez`) } }
+
+export class DuplicatedDirectionError extends Error { constructor() { super(`---`) } }
+
+export class CommonsTabError extends Error { constructor() { super("Todas las rutinas de la biblioteca deben explicitar donde se ensamblan") } }
 
 export class EmptyCode extends Error { constructor() { super("No hay código Q para ensamblar y ejecutar") } }
 
