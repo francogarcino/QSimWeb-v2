@@ -58,8 +58,12 @@ export class DivideByZeroError extends Error {
     super('No es posible dividir por 0')
   }
 }
-
+export class TimeoutError extends Error {
+	constructor() {
+    super('Se supero el límite de espera máximo. Posible llamado recursivo')
+  }
+}
 export class UndefinedLabel extends Error{}
 export class ExcecutionFinished extends Error{}
 
-export default {DisabledInstructionError, DisabledAddressingModeError, DisabledRegisterError, DivideByZeroError, ImmediateAsTarget, UndefinedCellValueError, UndefinedLabel, StackOverflowError}
+export default {DisabledInstructionError, DisabledAddressingModeError, DisabledRegisterError, DivideByZeroError, ImmediateAsTarget, UndefinedCellValueError, UndefinedLabel, StackOverflowError, TimeoutError}
