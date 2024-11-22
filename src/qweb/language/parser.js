@@ -74,10 +74,23 @@ class Parser {
     }
 
     validate_duplicated(code) {
+        this.check_duplicated_names(code)
+        this.check_duplicated_assembles(code)
+    }
+
+    check_duplicated_names(code) {
         const names = code.map(r => r.name);
         const uniqueNames = new Set(names);
         if (names.length > uniqueNames.size) {
             throw new DuplicatedNameError();
+        }
+    }
+
+    check_duplicated_assembles(code) {
+        const assembles = code.map(r => r.from_cell);
+        const uniqueAssembles = new Set(assembles);
+        if (assembles.length > uniqueAssembles.size) {
+            throw new DuplicatedDirectionError();
         }
     }
 
@@ -135,7 +148,7 @@ class Parser {
 
 export class DuplicatedNameError extends Error { constructor() { super(`Alguna rutina esta definida más de una vez`) } }
 
-export class DuplicatedDirectionError extends Error { constructor() { super(`---`) } }
+export class DuplicatedDirectionError extends Error { constructor() { super(`Dos rutinas se estan ensamblando desde la misma dirección`) } }
 
 export class CommonsTabError extends Error { constructor() { super("Todas las rutinas de la biblioteca deben explicitar donde se ensamblan") } }
 

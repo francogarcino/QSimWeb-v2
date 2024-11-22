@@ -14,7 +14,7 @@ import PaginationTable from "./PaginationTable.js";
 import FlagsPreview from "./FlagsPreview.js";
 import Memory from "./Memory.js";
 import translator from "../qweb/language/translator.js";
-import parser, { CommonsTabError, DuplicatedNameError, EmptyCode } from "../qweb/language/parser.js";
+import parser, { CommonsTabError, DuplicatedDirectionError, DuplicatedNameError, EmptyCode } from "../qweb/language/parser.js";
 import {
   ImmediateAsTarget,
   DisabledInstructionError,
@@ -93,6 +93,7 @@ const knownErrors = [
   StackOverflowError,
   CommonsTabError,
   DuplicatedNameError,
+  DuplicatedDirectionError,
   EmptyCode
 ];
 
@@ -164,7 +165,10 @@ export default function CodeExecutor() {
   function parse_and_load_program() {
     parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
-    let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+
+      // TODO: pasar los bloques a parsear como lista para fixear bug
+      let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+    
     let parsed_code = parse_code(code_with_libraries);
     console.log(parsed_code);
     parser.validate_duplicated(parsed_code)
