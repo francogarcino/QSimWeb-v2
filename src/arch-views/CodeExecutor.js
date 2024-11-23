@@ -7,7 +7,18 @@ import {
   Box,
   Typography,
   useTheme,
+  CircularProgress,
+  Tooltip,
+  Button,
+  IconButton,
 } from "@material-ui/core";
+import { 
+  Close,
+  Refresh,
+  PlayArrow,
+  PlaylistPlay,
+  PlaylistAdd,
+ } from "@material-ui/icons";
 import computer from "../qweb/qcomputer.js";
 import Registers from "./Registers.js";
 import PaginationTable from "./PaginationTable.js";
@@ -26,10 +37,8 @@ import {
   IncompleteRoutineError,
   EmptyStackError,
   StackOverflowError,
+  TimeoutError,
 } from "../qweb/exceptions.js";
-import PlayArrow from "@material-ui/icons/PlayArrow";
-import PlaylistPlay from "@material-ui/icons/PlaylistPlay";
-import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
 import { useSnackbar } from "notistack";
 import { ActionType } from "../action-type.js";
 import AceEditor from "react-ace";
@@ -42,13 +51,8 @@ import qConfig from "../qweb/qConfig.js";
 import { useTabs } from "../editor/CodeTabs.js";
 import ExecutionButton from "./ExecutionButton.js";
 import { isMobile } from "react-device-detect";
-import Button from "@material-ui/core/Button";
-import CloseIcon from "@material-ui/icons/Close";
 import { ResultTitle } from "../ui/ResultTitle.js";
 import "../App.css";
-import IconButton from "@material-ui/core/IconButton";
-import Tooltip from "@material-ui/core/Tooltip";
-import Refresh from "@material-ui/icons/Refresh";
 import ErrorTable from "./ErrorTable.js";
 
 const useStyles = makeStyles((theme) => ({
@@ -92,6 +96,7 @@ const knownErrors = [
   ImmediateAsTarget,
   StackOverflowError,
   CommonsTabError,
+  TimeoutError,
   DuplicatedNameError,
   DuplicatedDirectionError,
   EmptyCode
@@ -422,7 +427,7 @@ export default function CodeExecutor() {
   function addAction(action_display, config = {}) {
     SNACKBAR_CONFIG["action"] = (
       <Button onClick={() => closeSnackbar()}>
-        <CloseIcon />
+        <Close />
       </Button>
     );
     return enqueueSnackbar(action_display, { ...SNACKBAR_CONFIG, ...config });

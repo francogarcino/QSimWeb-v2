@@ -8,6 +8,7 @@ import {
   ImmediateAsTarget,
   ExcecutionFinished,
   IncompleteRoutineError,
+  TimeoutError,
 } from "./exceptions";
 import { getDetails, hexa, toHexa } from "../utils";
 var {
@@ -66,9 +67,13 @@ class Computer {
   execute() {
     this.state.begin_fetch();
     let cell = this.state.read_memory(this.state.PC);
+    let ___starttime___ = Date.now();
 
     while (true) {
       try {
+        if (Date.now() > ___starttime___ + 5000) {
+          throw new(TimeoutError)
+        }
         this._execute_cycle(cell);
         this.state.begin_fetch();
         cell = this.state.read_memory(this.state.PC);
