@@ -32,43 +32,74 @@ class Parser {
         }
     }
 
-    parse_code(codeToParse) {
+    parse_code(codeToParse) {    
         let assembly_cell = '0000'
         let code_lines = codeToParse.split(/\r\n|\r|\n/)
-        //TODO: agregar un chequeo de que si codeToParse es '' lance una Exception
-
         let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
+        
         let currentRoutine = (first_with_code !== undefined && first_with_code.includes(":")) ? first_with_code.split(":")[0] : ""
         let shouldUpdateRoutine = true
 
-        return code_lines.reduce((acc, line, index) => {
-            let {routines, errors, recursives} = acc;
-            line = line.includes('#') ? line.slice(0, line.indexOf('#')) : line
+        const result = code_lines.reduce((acc, line, index) => {
+            let { routines, errors, recursives } = acc;
+            line = line.includes('#') ? line.slice(0, line.indexOf('#')) : line;
             line = line.trim();
-            if (!line) return acc
+            if (!line) return acc;
+            
             try {
-                const parsed_instruction = this.parse_line(line, index)
+                const parsed_instruction = this.parse_line(line, index);
                 if (parsed_instruction.instruction.assembleIn) {
-                    assembly_cell = parsed_instruction.instruction.assembleIn.value.slice(2)
-                    shouldUpdateRoutine = true
-
-                    let routine = new Routine(assembly_cell)
-                    routines.push(routine)
+                    assembly_cell = parsed_instruction.instruction.assembleIn.value.slice(2);
+                    shouldUpdateRoutine = true;
+    
+                    let routine = new Routine(assembly_cell);
+                    routines.push(routine);
                 } else {
-                    let recursive_body = !shouldUpdateRoutine && line.includes(currentRoutine) && currentRoutine.trim() !== ""
-                    let recursive_declaration = (line.split(" ").filter(string => string.includes(currentRoutine)).length > 1) && currentRoutine.trim() !== ""
+                    let recursive_body = !shouldUpdateRoutine && line.includes(currentRoutine) && currentRoutine.trim() !== "";
+                    let recursive_declaration = (line.split(" ").filter(string => string.includes(currentRoutine)).length > 1) && currentRoutine.trim() !== "";
                     this.detect_recursion(recursive_body, recursive_declaration, recursives, currentRoutine, index);
-
+    
                     const __ret = this.update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index);
                     shouldUpdateRoutine = __ret.shouldUpdateRoutine;
                     currentRoutine = __ret.currentRoutine;
-                    routines[routines.length - 1].add_instruction(parsed_instruction)
+                    routines[routines.length - 1].add_instruction(parsed_instruction);
                 }
             } catch (error) {
-                errors.push({error, line: index})
+                errors.push({ error, line: index });
             }
-            return {routines, errors, recursives};
-        }, {routines: [new Routine(assembly_cell)], errors: [], recursives: []})
+            return { routines, errors, recursives };
+        }, { routines: [new Routine(assembly_cell)], errors: [], recursives: [] });
+
+        return result;
+    }
+
+    validate_duplicated(code) {
+        this.check_duplicated_names(code)
+        this.check_duplicated_assembles(code)
+    }
+
+    check_duplicated_names(code) {
+        const names = code.map(r => r.name);
+        const uniqueNames = new Set(names);
+        if (names.length > uniqueNames.size) {
+            throw new DuplicatedNameError();
+        }
+    }
+
+    check_duplicated_assembles(code) {
+        const assembles = code.map(r => r.from_cell);
+        const uniqueAssembles = new Set(assembles);
+        if (assembles.length > uniqueAssembles.size) {
+            throw new DuplicatedDirectionError();
+        }
+    }
+
+    validate_empty_code(code) {
+        let code_lines = code.split(/\r\n|\r|\n/)
+        let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
+        if (first_with_code === undefined) {
+            throw new EmptyCode()
+        }
     }
 
     validate_commons_code(code) {
@@ -115,11 +146,13 @@ class Parser {
     }
 }
 
-export class CommonsTabError extends Error {
-    constructor() {
-        super("Todas las rutinas de la biblioteca deben explicitar donde se ensamblan")
-    }
-}
+export class DuplicatedNameError extends Error { constructor() { super(`Alguna rutina esta definida más de una vez`) } }
+
+export class DuplicatedDirectionError extends Error { constructor() { super(`Dos rutinas se estan ensamblando desde la misma dirección`) } }
+
+export class CommonsTabError extends Error { constructor() { super("Todas las rutinas de la biblioteca deben explicitar donde se ensamblan") } }
+
+export class EmptyCode extends Error { constructor() { super("No hay código Q para ensamblar y ejecutar") } }
 
 export class InvalidInstructionError extends Error {
     constructor(invalidCode, index) {

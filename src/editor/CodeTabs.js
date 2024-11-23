@@ -74,6 +74,7 @@ export function useTabs() {
   }
 
   function removeTab(name) {
+    setCurrentTab(0)
     setTabs((old) => {
       return [...old.filter((t) => t.name !== name)];
     });
@@ -147,6 +148,14 @@ export default function CodeTabs({
     }
   }
 
+  function changeTab(toIndex, fromIndex) {
+    if (toIndex >= tabs.length) {
+      setCurrentTab(fromIndex);
+    } else {
+      setCurrentTab(toIndex)
+    }
+  }  
+
   function saveTabAsTxt(tabName) {
     const code = tabs.find((tab) => tab.name === tabName).code;
     var blob = new Blob([code], { type: "text/plain;charset=utf-8" });
@@ -198,7 +207,7 @@ export default function CodeTabs({
       <Tabs
         value={currentTab}
         className={classes.tabs}
-        onChange={(e, newValue) => setCurrentTab(newValue)}
+        onChange={(e, newValue) => changeTab(newValue, currentTab)}
         variant="scrollable"
       >
         {tabs.map((tab, index) => {

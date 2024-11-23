@@ -7,14 +7,25 @@ import {
   Box,
   Typography,
   useTheme,
+  CircularProgress,
+  Tooltip,
+  Button,
+  IconButton,
 } from "@material-ui/core";
+import { 
+  Close,
+  Refresh,
+  PlayArrow,
+  PlaylistPlay,
+  PlaylistAdd,
+ } from "@material-ui/icons";
 import computer from "../qweb/qcomputer.js";
 import Registers from "./Registers.js";
 import PaginationTable from "./PaginationTable.js";
 import FlagsPreview from "./FlagsPreview.js";
 import Memory from "./Memory.js";
 import translator from "../qweb/language/translator.js";
-import parser, { CommonsTabError } from "../qweb/language/parser.js";
+import parser, { CommonsTabError, DuplicatedDirectionError, DuplicatedNameError, EmptyCode } from "../qweb/language/parser.js";
 import {
   ImmediateAsTarget,
   DisabledInstructionError,
@@ -26,10 +37,8 @@ import {
   IncompleteRoutineError,
   EmptyStackError,
   StackOverflowError,
+  TimeoutError,
 } from "../qweb/exceptions.js";
-import PlayArrow from "@material-ui/icons/PlayArrow";
-import PlaylistPlay from "@material-ui/icons/PlaylistPlay";
-import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
 import { useSnackbar } from "notistack";
 import { ActionType } from "../action-type.js";
 import AceEditor from "react-ace";
@@ -42,13 +51,8 @@ import qConfig from "../qweb/qConfig.js";
 import { useTabs } from "../editor/CodeTabs.js";
 import ExecutionButton from "./ExecutionButton.js";
 import { isMobile } from "react-device-detect";
-import Button from "@material-ui/core/Button";
-import CloseIcon from "@material-ui/icons/Close";
 import { ResultTitle } from "../ui/ResultTitle.js";
 import "../App.css";
-import IconButton from "@material-ui/core/IconButton";
-import Tooltip from "@material-ui/core/Tooltip";
-import Refresh from "@material-ui/icons/Refresh";
 import ErrorTable from "./ErrorTable.js";
 
 const useStyles = makeStyles((theme) => ({
@@ -91,7 +95,11 @@ const knownErrors = [
   UndefinedLabel,
   ImmediateAsTarget,
   StackOverflowError,
-  CommonsTabError
+  CommonsTabError,
+  TimeoutError,
+  DuplicatedNameError,
+  DuplicatedDirectionError,
+  EmptyCode
 ];
 
 export default function CodeExecutor() {
@@ -142,6 +150,7 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
+    console.log(currentTab);
     parse_warnings(getCodeFromCurrent());
     setResult("");
     setErrors([]);
@@ -156,13 +165,21 @@ export default function CodeExecutor() {
   }
 
   function getCodeFromCurrent() {
-    return (tabs[currentTab]).code
+    try {
+      return (tabs[currentTab]).code
+    } catch (error) { console.log("Can't read code from unexistent tab") }
   }
 
   function parse_and_load_program() {
+    parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
-    let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+
+      // TODO: pasar los bloques a parsear como lista para fixear bug
+      let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+    
     let parsed_code = parse_code(code_with_libraries);
+    console.log(parsed_code);
+    parser.validate_duplicated(parsed_code)
     let routines = translator.translate_code(parsed_code);
     load_program(routines);
   }
@@ -172,6 +189,10 @@ export default function CodeExecutor() {
 
     let alertConfig = { variant: "error" };
     qweb_restart();
+    if (e instanceof EmptyCode) {
+      addAction(e.message, {variant: "info"})
+      return;
+    }
     if (knownErrors.some((error) => e instanceof error))
       addAction(e.message, alertConfig);
     else
@@ -406,7 +427,7 @@ export default function CodeExecutor() {
   function addAction(action_display, config = {}) {
     SNACKBAR_CONFIG["action"] = (
       <Button onClick={() => closeSnackbar()}>
-        <CloseIcon />
+        <Close />
       </Button>
     );
     return enqueueSnackbar(action_display, { ...SNACKBAR_CONFIG, ...config });
