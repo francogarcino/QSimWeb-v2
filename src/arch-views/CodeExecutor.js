@@ -25,7 +25,7 @@ import PaginationTable from "./PaginationTable.js";
 import FlagsPreview from "./FlagsPreview.js";
 import Memory from "./Memory.js";
 import translator from "../qweb/language/translator.js";
-import parser, { CommonsTabError } from "../qweb/language/parser.js";
+import parser, { CommonsTabError, DuplicatedDirectionError, DuplicatedNameError, EmptyCode } from "../qweb/language/parser.js";
 import {
   ImmediateAsTarget,
   DisabledInstructionError,
@@ -96,7 +96,10 @@ const knownErrors = [
   ImmediateAsTarget,
   StackOverflowError,
   CommonsTabError,
-  TimeoutError
+  TimeoutError,
+  DuplicatedNameError,
+  DuplicatedDirectionError,
+  EmptyCode
 ];
 
 export default function CodeExecutor() {
@@ -147,6 +150,7 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
+    console.log(currentTab);
     parse_warnings(getCodeFromCurrent());
     setResult("");
     setErrors([]);
@@ -161,13 +165,21 @@ export default function CodeExecutor() {
   }
 
   function getCodeFromCurrent() {
-    return (tabs[currentTab]).code
+    try {
+      return (tabs[currentTab]).code
+    } catch (error) { console.log("Can't read code from unexistent tab") }
   }
 
   function parse_and_load_program() {
+    parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
-    let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+
+      // TODO: pasar los bloques a parsear como lista para fixear bug
+      let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+    
     let parsed_code = parse_code(code_with_libraries);
+    console.log(parsed_code);
+    parser.validate_duplicated(parsed_code)
     let routines = translator.translate_code(parsed_code);
     load_program(routines);
   }
@@ -177,6 +189,10 @@ export default function CodeExecutor() {
 
     let alertConfig = { variant: "error" };
     qweb_restart();
+    if (e instanceof EmptyCode) {
+      addAction(e.message, {variant: "info"})
+      return;
+    }
     if (knownErrors.some((error) => e instanceof error))
       addAction(e.message, alertConfig);
     else
