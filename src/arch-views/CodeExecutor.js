@@ -145,6 +145,7 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
+    console.log(currentTab);
     parse_warnings(getCodeFromCurrent());
     setResult("");
     setErrors([]);
@@ -159,7 +160,9 @@ export default function CodeExecutor() {
   }
 
   function getCodeFromCurrent() {
-    return (tabs[currentTab]).code
+    try {
+      return (tabs[currentTab]).code
+    } catch (error) { console.log("Can't read code from unexistent tab") }
   }
 
   function parse_and_load_program() {

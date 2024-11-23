@@ -32,7 +32,7 @@ class Parser {
         }
     }
 
-    parse_code(codeToParse) {
+    parse_code(codeToParse) {    
         let assembly_cell = '0000'
         let code_lines = codeToParse.split(/\r\n|\r|\n/)
         let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
