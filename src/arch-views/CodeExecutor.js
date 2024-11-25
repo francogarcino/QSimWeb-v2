@@ -150,7 +150,6 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
-    console.log(currentTab);
     parse_warnings(getCodeFromCurrent());
     setResult("");
     setErrors([]);
@@ -173,14 +172,16 @@ export default function CodeExecutor() {
   function parse_and_load_program() {
     parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
-
-      // TODO: pasar los bloques a parsear como lista para fixear bug
-      let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
+    let code_in_scope = [
+      { code: getCodeFromCurrent(), tab_index: currentTab },
+      { code: getLibrary, tab_index: 1 }
+    ]
     
-    let parsed_code = parse_code(code_with_libraries);
-    console.log(parsed_code);
-    parser.validate_duplicated(parsed_code)
-    let routines = translator.translate_code(parsed_code);
+    // esto esta generando 2 desde '0000'
+    let parsed_code = parser.by_batch(code_in_scope)
+    
+    parser.validate_duplicated(parsed_code.routines)
+    let routines = translator.translate_code(parsed_code.routines);
     load_program(routines);
   }
 
