@@ -178,6 +178,7 @@ export default function CodeExecutor() {
     ]
     
     // esto esta generando 2 desde '0000'
+    // debe llamar a parse_code del CEx
     let parsed_code = parser.by_batch(code_in_scope)
     
     parser.validate_duplicated(parsed_code.routines)
@@ -245,8 +246,10 @@ export default function CodeExecutor() {
       const hasErrors = errors.some((e) => e && e.error);
 
       if (!hasErrors) {
+        // esto se va a acumular desde fuera
         return routines;
       } else {
+        // esto debe setear prevs + actus
         setErrors(errors);
       }
     } catch (e) {
