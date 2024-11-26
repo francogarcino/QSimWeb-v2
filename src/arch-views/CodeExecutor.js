@@ -172,17 +172,20 @@ export default function CodeExecutor() {
   function parse_and_load_program() {
     parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
-    let code_in_scope = [
-      { code: getCodeFromCurrent(), tab_index: currentTab },
-      { code: getLibrary, tab_index: 1 }
-    ]
+
+    let programs = []
+    let current_parsed = parse_code(getCodeFromCurrent())
+    if (current_parsed !== undefined) {
+      programs = programs.concat(current_parsed)
+    }
+
+    let lib_parsed = parse_code(getLibrary)
+    if (lib_parsed !== undefined) {
+      programs = programs.concat(lib_parsed.slice(1))
+    }
     
-    // esto esta generando 2 desde '0000'
-    // debe llamar a parse_code del CEx
-    let parsed_code = parser.by_batch(code_in_scope)
-    
-    parser.validate_duplicated(parsed_code.routines)
-    let routines = translator.translate_code(parsed_code.routines);
+    parser.validate_duplicated(programs)
+    let routines = translator.translate_code(programs);
     load_program(routines);
   }
 
