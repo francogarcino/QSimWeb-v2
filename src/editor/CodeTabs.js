@@ -94,7 +94,7 @@ export function useTabs() {
   }, [validTab, currentTab]);
 
   const getLibrary = tabs.find(t => t.name === "Biblioteca").code;
-
+  const nameByIndex = (index) => tabs[index].name
 
   return [
     <CodeTabs
@@ -104,6 +104,7 @@ export function useTabs() {
     currentTab,
     validTab ? tabs[currentTab].code : "",
     getLibrary,
+    nameByIndex,
     setCode,
   ];
 }

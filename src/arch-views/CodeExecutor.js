@@ -121,7 +121,7 @@ export default function CodeExecutor() {
   const [aceEditorMarkers, setAceEditorMarkers] = useState([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
-  const [TabsCode, tabs, currentTab, code, getLibrary, setCode] = useTabs();
+  const [TabsCode, tabs, currentTab, code, getLibrary, nameByIndex, setCode] = useTabs();
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
     () => ActionMode.find_modeclass(actionMode),
@@ -240,9 +240,8 @@ export default function CodeExecutor() {
 
   function parse_code(codeToParse, tabIndex) {
     try {        
-        // recursivos sin funcionar 
       const { routines, errors, recursives } = parser.parse_code(codeToParse);
-      errors.map(e => e.error.tab = tabIndex)
+      errors.map(e => e.error.tab = nameByIndex(tabIndex))
       addNotifications(errors, "error", false);
       mark_recursives(recursives);
 
@@ -330,7 +329,7 @@ export default function CodeExecutor() {
   }
   const addNotification = (e, session, typeOfMarker, must_show) => {
     const { type, className } = typeOfMarker;  
-    if (must_show || e.error.tab === currentTab) {
+    if (must_show || e.error.tab === nameByIndex(currentTab)) {
       setAceEditorAnnotations((prevErrors) => [
         ...prevErrors,
         {
