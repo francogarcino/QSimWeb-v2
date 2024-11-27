@@ -150,8 +150,10 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
+    // warnings actuales unicamente
     parse_warnings(getCodeFromCurrent());
     setResult("");
+    // no setearlo
     setErrors([]);
   }, [code]);
 
@@ -174,16 +176,17 @@ export default function CodeExecutor() {
     parser.validate_commons_code(getLibrary)
 
     let programs = []
-    let current_parsed = parse_code(getCodeFromCurrent())
+
+    let current_parsed = parse_code(getCodeFromCurrent(), currentTab)
     if (current_parsed !== undefined) {
       programs = programs.concat(current_parsed)
     }
 
-    let lib_parsed = parse_code(getLibrary)
+    let lib_parsed = parse_code(getLibrary, 1)
     if (lib_parsed !== undefined) {
       programs = programs.concat(lib_parsed.slice(1))
     }
-    
+
     parser.validate_duplicated(programs)
     let routines = translator.translate_code(programs);
     load_program(routines);
@@ -237,7 +240,7 @@ export default function CodeExecutor() {
     }
   }
 
-  function parse_code(codeToParse) {
+  function parse_code(codeToParse, tabIndex) {
     try {
       setAceEditorAnnotations([]);
       setAceEditorMarkers([]);
@@ -249,11 +252,10 @@ export default function CodeExecutor() {
       const hasErrors = errors.some((e) => e && e.error);
 
       if (!hasErrors) {
-        // esto se va a acumular desde fuera
         return routines;
       } else {
-        // esto debe setear prevs + actus
-        setErrors(errors);
+        errors.map(e => e.error.tab = tabIndex)
+        setErrors(prev => prev.concat(errors));
       }
     } catch (e) {
       //addError(e)
@@ -512,7 +514,7 @@ export default function CodeExecutor() {
   };
 
   function validateCode() {
-    parse_code(getCodeFromCurrent());
+    parse_code(getCodeFromCurrent(), currentTab);
   }
   function goToLine(index) {
     aceEditorRef.current.editor.gotoLine(index+1);
