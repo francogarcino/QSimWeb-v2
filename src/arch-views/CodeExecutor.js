@@ -122,6 +122,7 @@ export default function CodeExecutor() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
   const [TabsCode, tabs, currentTab, code, getLibrary, setCode] = useTabs();
+  const tabsRef = useRef(tabs);
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
     () => ActionMode.find_modeclass(actionMode),
@@ -146,7 +147,7 @@ export default function CodeExecutor() {
       className: "info-highlight",
     },
   };
-  const completer = new CustomCompleter();
+  const completer = useMemo(() => new CustomCompleter(() => tabsRef.current), []);
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
@@ -155,6 +156,10 @@ export default function CodeExecutor() {
     setResult("");
     setErrors([]);
   }, [code]);
+
+  useEffect(() => {
+    tabsRef.current = tabs;
+  }, [tabs]);
 
   function load_program(routines) {
     computer.load_many(routines);
