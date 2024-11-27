@@ -73,23 +73,6 @@ class Parser {
         return result;
     }
 
-    by_batch(sources) {
-        let result = {routines:[], errors: [], recursives: []}
-        sources.forEach(src => {
-            let parsed = this.parse_code(src.code)
-            let indexed_errors = parsed.errors
-            indexed_errors.forEach(ie => { ie.tab = src.tab_index })
-            
-            result = {
-                routines: result.routines.concat(parsed.routines),
-                errors: result.errors.concat(indexed_errors),
-                recursives: result.recursives.concat(parsed.recursives)
-            }
-        })
-
-        return result
-    }
-
     validate_duplicated(code) {
         this.check_duplicated_names(code)
         this.check_duplicated_assembles(code)
