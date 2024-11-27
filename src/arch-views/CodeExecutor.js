@@ -150,7 +150,6 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
-    // warnings actuales unicamente
     parse_warnings(getCodeFromCurrent());
     setResult("");
   }, [code]);
@@ -240,12 +239,11 @@ export default function CodeExecutor() {
   }
 
   function parse_code(codeToParse, tabIndex) {
-    try {
-      setAceEditorAnnotations([]);
-      setAceEditorMarkers([]);
+    try {        
+        // recursivos sin funcionar 
       const { routines, errors, recursives } = parser.parse_code(codeToParse);
-      addNotifications(errors, "error");
-
+      errors.map(e => e.error.tab = tabIndex)
+      addNotifications(errors, "error", false);
       mark_recursives(recursives);
 
       const hasErrors = errors.some((e) => e && e.error);
@@ -253,7 +251,6 @@ export default function CodeExecutor() {
       if (!hasErrors) {
         return routines;
       } else {
-        errors.map(e => e.error.tab = tabIndex)
         setErrors(prev => prev.concat(errors));
       }
     } catch (e) {
@@ -307,11 +304,11 @@ export default function CodeExecutor() {
     setAceEditorAnnotations([]);
     setAceEditorMarkers([]);
     const { errors, recursives } = parser.parse_code(codeToParse);
-    addNotifications(errors, "warning");
+    addNotifications(errors, "warning", true);
     mark_recursives(recursives);
   }
 
-  function addNotifications(errors, type) {
+  function addNotifications(errors, type, must_show) {
     const session = aceEditorRef.current.editor.getSession();
     const typeOfMarker = markerType[type];
     const { result } = errors.reduce(
@@ -320,7 +317,7 @@ export default function CodeExecutor() {
 
         const newResult = `${result}\n${e.error.message}`;
 
-        addNotification(e, session, typeOfMarker);
+        addNotification(e, session, typeOfMarker, must_show);
 
         return {
           result: newResult,
@@ -331,33 +328,35 @@ export default function CodeExecutor() {
     );
     setResult(result);
   }
-  const addNotification = (e, session, typeOfMarker) => {
-    const { type, className } = typeOfMarker;
-    setAceEditorAnnotations((prevErrors) => [
-      ...prevErrors,
-      {
-        row: e.error.line,
-        column: Math.random(),
-        type: type,
-        text: e.error.shorterMessage,
-      },
-    ]);
-
-    setAceEditorMarkers((prevMarkers) => {
-      const lineLength = session.getLine(e.error.line).length;
-      return [
-        ...prevMarkers,
+  const addNotification = (e, session, typeOfMarker, must_show) => {
+    const { type, className } = typeOfMarker;  
+    if (must_show || e.error.tab === currentTab) {
+      setAceEditorAnnotations((prevErrors) => [
+        ...prevErrors,
         {
-          startRow: e.error.line,
-          startCol: e.error.index,
-          endRow: e.error.line,
-          endCol: lineLength,
-          className: className,
-          type: "text",
-          inFront: true,
+          row: e.error.line,
+          column: Math.random(),
+          type: type,
+          text: e.error.shorterMessage,
         },
-      ];
-    });
+      ]);
+
+      setAceEditorMarkers((prevMarkers) => {
+        const lineLength = session.getLine(e.error.line).length;
+        return [
+          ...prevMarkers,
+          {
+            startRow: e.error.line,
+            startCol: e.error.index,
+            endRow: e.error.line,
+            endCol: lineLength,
+            className: className,
+            type: "text",
+            inFront: true,
+          },
+        ];
+      });
+    }
   };
   function execute_cycle() {
     try {
