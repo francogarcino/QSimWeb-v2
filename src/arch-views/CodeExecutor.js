@@ -153,8 +153,6 @@ export default function CodeExecutor() {
     // warnings actuales unicamente
     parse_warnings(getCodeFromCurrent());
     setResult("");
-    // no setearlo
-    setErrors([]);
   }, [code]);
 
   function load_program(routines) {
@@ -223,6 +221,7 @@ export default function CodeExecutor() {
   }
 
   function execute() {
+    setErrors([])
     try {
       if (currentExecutionMode !== EXECUTION_MODE_NORMAL) {
         qweb_restart();
