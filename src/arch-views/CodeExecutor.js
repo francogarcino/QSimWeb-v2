@@ -189,10 +189,11 @@ export default function CodeExecutor() {
 
     parser.validate_duplicated(programs)
     let routines = translator.translate_code(programs);
-    // este load evita que se muestre bien el error
-    load_program(routines);
-    
-    return (errorsDetectedByFlag(lib_parsed) || errorsDetectedByFlag(current_parsed))
+
+    return {
+      detected: (errorsDetectedByFlag(lib_parsed) || errorsDetectedByFlag(current_parsed)),
+      rts: routines
+    }
   }
 
   function execution_on_error(e) {
@@ -234,10 +235,10 @@ export default function CodeExecutor() {
         setCurrentExecutionMode(EXECUTION_MODE_NORMAL);
       }
       result = parse_and_load_program();
-      console.log('q das', result);
-      if (result) {
+      if (result.detected) {
         throw new Error("Se encontraron errores durante la ejecución.");
       }
+      load_program(result.rts)
       var executionActions = computer.execute();
       display_results(false);
       qweb_restart();
