@@ -371,8 +371,10 @@ export default function CodeExecutor() {
     }
   };
   function execute_cycle() {
-    // setErrors([])
+    setErrors([])
     try {
+      console.log(!programLoaded);
+      console.log(currentExecutionMode !== EXECUTION_MODE_ONE_INSTRUCTION);
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION);
       computer.execute_cycle();
       display_results(true);
@@ -382,7 +384,7 @@ export default function CodeExecutor() {
   }
 
   function execute_cycle_detailed() {
-    // setErrors([])
+    setErrors([])
     try {
       switchDetailedMode(EXECUTION_MODE_DETAILED);
       if (programFinished && programLoaded) {
@@ -410,8 +412,11 @@ export default function CodeExecutor() {
       setCurrentExecutionMode(execution_mode);
       if (!programLoaded) {
         qweb_restart();
-        // retornar resultado
-        parse_and_load_program();
+        let result = parse_and_load_program();
+        if (result.detected) {
+          throw new Error("Se encontraron errores durante la ejecución.");
+        }
+        load_program(result.rts)
       }
       setProgramLoaded(true);
     }
