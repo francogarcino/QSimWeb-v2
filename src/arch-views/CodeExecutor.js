@@ -152,6 +152,7 @@ export default function CodeExecutor() {
   useEffect(() => {
     parse_warnings(getCodeFromCurrent());
     setResult("");
+    qweb_restart()
   }, [code]);
 
   function load_program(routines) {
