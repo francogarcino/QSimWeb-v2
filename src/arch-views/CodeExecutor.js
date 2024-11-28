@@ -168,25 +168,31 @@ export default function CodeExecutor() {
     } catch (error) { console.log("Can't read code from unexistent tab") }
   }
 
+  function errorsDetectedByFlag(something) {
+    return typeof something === 'boolean'
+  }
+
   function parse_and_load_program() {
     parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
 
     let programs = []
-
     let current_parsed = parse_code(getCodeFromCurrent(), currentTab)
-    if (current_parsed !== undefined) {
+    if (!errorsDetectedByFlag(current_parsed)) {
       programs = programs.concat(current_parsed)
     }
 
     let lib_parsed = parse_code(getLibrary, 1)
-    if (lib_parsed !== undefined) {
+    if (!errorsDetectedByFlag(lib_parsed)) {
       programs = programs.concat(lib_parsed.slice(1))
     }
 
     parser.validate_duplicated(programs)
     let routines = translator.translate_code(programs);
+    // este load evita que se muestre bien el error
     load_program(routines);
+    
+    return (errorsDetectedByFlag(lib_parsed) || errorsDetectedByFlag(current_parsed))
   }
 
   function execution_on_error(e) {
@@ -220,13 +226,18 @@ export default function CodeExecutor() {
   }
 
   function execute() {
+    let result;
     setErrors([])
     try {
       if (currentExecutionMode !== EXECUTION_MODE_NORMAL) {
         qweb_restart();
         setCurrentExecutionMode(EXECUTION_MODE_NORMAL);
       }
-      parse_and_load_program();
+      result = parse_and_load_program();
+      console.log('q das', result);
+      if (result) {
+        throw new Error("Se encontraron errores durante la ejecución.");
+      }
       var executionActions = computer.execute();
       display_results(false);
       qweb_restart();
@@ -251,6 +262,7 @@ export default function CodeExecutor() {
         return routines;
       } else {
         setErrors(prev => prev.concat(errors));
+        return false
       }
     } catch (e) {
       //addError(e)
@@ -358,6 +370,7 @@ export default function CodeExecutor() {
     }
   };
   function execute_cycle() {
+    // setErrors([])
     try {
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION);
       computer.execute_cycle();
@@ -368,6 +381,7 @@ export default function CodeExecutor() {
   }
 
   function execute_cycle_detailed() {
+    // setErrors([])
     try {
       switchDetailedMode(EXECUTION_MODE_DETAILED);
       if (programFinished && programLoaded) {
@@ -395,6 +409,7 @@ export default function CodeExecutor() {
       setCurrentExecutionMode(execution_mode);
       if (!programLoaded) {
         qweb_restart();
+        // retornar resultado
         parse_and_load_program();
       }
       setProgramLoaded(true);
