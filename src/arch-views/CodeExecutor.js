@@ -174,6 +174,9 @@ export default function CodeExecutor() {
   }
 
   function parse_and_load_program() {
+    if (currentTab == 1) {
+      throw new Error("La biblioteca no puede ejecutarse como principal");
+    }
     parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
 
@@ -209,7 +212,7 @@ export default function CodeExecutor() {
     if (knownErrors.some((error) => e instanceof error))
       addAction(e.message, alertConfig);
     else
-      addAction("Hubo un error, es posible que sea de sintaxis", alertConfig);
+      addAction(e.message, alertConfig);
   }
 
   function qweb_restart() {
