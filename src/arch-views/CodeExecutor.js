@@ -122,6 +122,7 @@ export default function CodeExecutor() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
   const [TabsCode, tabs, currentTab, code, getLibrary, nameByIndex, setCode] = useTabs();
+  const tabsRef = useRef(tabs);
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
     () => ActionMode.find_modeclass(actionMode),
@@ -146,14 +147,19 @@ export default function CodeExecutor() {
       className: "info-highlight",
     },
   };
-  const completer = new CustomCompleter();
+  const completer = useMemo(() => new CustomCompleter(() => tabsRef.current), []);
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
+    console.log(currentTab);
     parse_warnings(getCodeFromCurrent());
     setResult("");
     qweb_restart()
   }, [code]);
+
+  useEffect(() => {
+    tabsRef.current = tabs;
+  }, [tabs]);
 
   function load_program(routines) {
     computer.load_many(routines);
@@ -255,7 +261,7 @@ export default function CodeExecutor() {
   }
 
   function parse_code(codeToParse, tabIndex) {
-    try {        
+    try {
       const { routines, errors, recursives } = parser.parse_code(codeToParse);
       errors.map(e => e.error.tab = nameByIndex(tabIndex))
       addNotifications(errors, "error", false);
@@ -345,7 +351,7 @@ export default function CodeExecutor() {
     setResult(result);
   }
   const addNotification = (e, session, typeOfMarker, must_show) => {
-    const { type, className } = typeOfMarker;  
+    const { type, className } = typeOfMarker;
     if (must_show || e.error.tab === nameByIndex(currentTab)) {
       setAceEditorAnnotations((prevErrors) => [
         ...prevErrors,
@@ -377,8 +383,6 @@ export default function CodeExecutor() {
   function execute_cycle() {
     setErrors([])
     try {
-      console.log(!programLoaded);
-      console.log(currentExecutionMode !== EXECUTION_MODE_ONE_INSTRUCTION);
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION);
       computer.execute_cycle();
       display_results(true);

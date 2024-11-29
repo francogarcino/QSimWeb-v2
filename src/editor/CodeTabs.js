@@ -54,10 +54,12 @@ export function useTabs() {
     },
     {
       name: "Biblioteca",
-      code: "# = ¡AVISO DE USO! ===== \n" + 
-            "# Todas las rutinas de este archivo \n" + 
-            "# deben aclarar donde se ensamblan con \n" + 
-            "# [assemble: 0xHHHH]",
+      code: qConfig.getCode("library")
+        ? qConfig.getCode("library")
+        : "# = ¡AVISO DE USO! ===== \n" +
+          "# Todas las rutinas de este archivo \n" +
+          "# deben aclarar donde se ensamblan con \n" +
+          "# [assemble: 0xHHHH]",
       default: true,
     },
   ]);
@@ -74,26 +76,29 @@ export function useTabs() {
   }
 
   function removeTab(name) {
-    setCurrentTab(0)
+    setCurrentTab(0);
     setTabs((old) => {
       return [...old.filter((t) => t.name !== name)];
     });
   }
 
-  const setCode = useCallback((value) => {
-    if (validTab) {
-      setTabs(old => {
-        const updatedTabs = [...old];
-        updatedTabs[currentTab] = {
-          ...updatedTabs[currentTab],
-          code: value
-        };
-        return updatedTabs;
-      });
-    }
-  }, [validTab, currentTab]);
+  const setCode = useCallback(
+    (value) => {
+      if (validTab) {
+        setTabs((old) => {
+          const updatedTabs = [...old];
+          updatedTabs[currentTab] = {
+            ...updatedTabs[currentTab],
+            code: value,
+          };
+          return updatedTabs;
+        });
+      }
+    },
+    [validTab, currentTab]
+  );
 
-  const getLibrary = tabs.find(t => t.name === "Biblioteca").code;
+  const getLibrary = tabs.find((t) => t.name === "Biblioteca").code;
   const nameByIndex = (index) => tabs[index].name
 
   return [
@@ -153,21 +158,24 @@ export default function CodeTabs({
     if (toIndex >= tabs.length) {
       setCurrentTab(fromIndex);
     } else {
-      setCurrentTab(toIndex)
+      setCurrentTab(toIndex);
     }
-  }  
+  }
 
   function saveTabAsTxt(tabName) {
     const code = tabs.find((tab) => tab.name === tabName).code;
     var blob = new Blob([code], { type: "text/plain;charset=utf-8" });
     FileSaver.saveAs(blob, tabName + ".txt");
   }
+
   function handleOption(tab, option) {
+    const type = tab.name === "Biblioteca" ? "library" : "tab";
+
     if (option === "save") {
       const code = tabs.find((t) => t.name === tab.name).code;
-      qConfig.setCode(code);
+      qConfig.setCode(type, code);
       enqueueSnackbar(
-        "El código de la sesión se guardo correctamente",
+        "El código de la sesión se guardó correctamente",
         SNACKBAR_CONFIG_OPTIONS
       );
     } else if (option === "download") {
@@ -177,7 +185,7 @@ export default function CodeTabs({
         SNACKBAR_CONFIG_OPTIONS
       );
     } else if (option === "clear") {
-      qConfig.removeCode();
+      qConfig.removeCode(type);
       enqueueSnackbar(
         "El código de la sesión se eliminó",
         SNACKBAR_CONFIG_OPTIONS
@@ -227,7 +235,7 @@ export default function CodeTabs({
                 onClick={() => setCurrentTab(index)}
               />
               {/*<GetApp style={{ fontSize: "13px", cursor: "pointer", color: "primary" }} onClick={() => saveTabAsTxt(tab.name)} /> */}
-              <SaveMenu handle={(key) => handleOption(tab, key)} />
+              <SaveMenu handle={(key) => handleOption(tab, key)} isCurrentTab={currentTab === index}/>
               {!tab.default && (
                 <CloseOutlinedIcon
                   style={{ fontSize: "13px", cursor: "pointer", color: "red" }}
