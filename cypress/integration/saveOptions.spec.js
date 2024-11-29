@@ -10,9 +10,9 @@ context('SaveOptions', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(['MOV R1, 0x0001', 'MOV R2, 0x0002']))
 
-    cy.get('[id="save-button"]').click()
+    cy.get('[id="save-button"]:not([disabled])').click()
 
-    cy.get('[id="client-snackbar"]').should('have.text', 'El código de la sesión se guardo correctamente')
+    cy.get('[id="client-snackbar"]').should('have.text', 'El código de la sesión se guardó correctamente')
 
     cy.reload()
 
@@ -26,7 +26,7 @@ context('SaveOptions', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(['MOV R1, 0x0001', 'MOV R2, 0x0002']))
 
-    cy.get('[id="long-button"]').click()
+    cy.get('[id="long-button"]:not([disabled])').click()
 
     cy.get('[id="download"]').click()
 
@@ -37,15 +37,15 @@ context('SaveOptions', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(['MOV R1, 0x0001', 'MOV R2, 0x0002']))
 
-    cy.get('[id="save-button"]').click()
+    cy.get('[id="save-button"]:not([disabled])').click()
 
-    cy.get('[id="client-snackbar"]').should('have.text', 'El código de la sesión se guardo correctamente')
+    cy.get('[id="client-snackbar"]').should('have.text', 'El código de la sesión se guardó correctamente')
 
     cy.reload()
 
     cy.get('[id="ace-editor"]').should('not.be.empty')   
 
-    cy.get('[id="long-button"]').click()
+    cy.get('[id="long-button"]:not([disabled])').click()
 
     cy.get('[id="clear"]').click()
 

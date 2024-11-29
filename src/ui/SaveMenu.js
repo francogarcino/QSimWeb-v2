@@ -13,7 +13,7 @@ const options = [
 
 const ITEM_HEIGHT = 48;
 
-export default function SaveMenu({ handle = () => {} }) {
+export default function SaveMenu({ handle = () => {}, isCurrentTab }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -28,7 +28,7 @@ export default function SaveMenu({ handle = () => {} }) {
   return (
     <div>
       <Tooltip title="Guardar código en sesión">
-        <IconButton id="save-button" onClick={() => handleClose("save")}>
+        <IconButton id="save-button" onClick={() => handleClose("save")} disabled={!isCurrentTab}>
           <Save></Save>
         </IconButton>
       </Tooltip>
@@ -40,6 +40,7 @@ export default function SaveMenu({ handle = () => {} }) {
         aria-expanded={open ? "true" : undefined}
         aria-haspopup="true"
         onClick={handleClick}
+        disabled={!isCurrentTab}
       >
         <MoreHoriz />
       </IconButton>

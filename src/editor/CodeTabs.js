@@ -185,10 +185,6 @@ export default function CodeTabs({
     } else if (option === "clear") {
       qConfig.removeCode(type);
       enqueueSnackbar(
-        `El código ${tab.name} se eliminó correctamente`,
-        SNACKBAR_CONFIG_OPTIONS
-      );
-      enqueueSnackbar(
         "El código de la sesión se eliminó",
         SNACKBAR_CONFIG_OPTIONS
       );
@@ -237,7 +233,7 @@ export default function CodeTabs({
                 onClick={() => setCurrentTab(index)}
               />
               {/*<GetApp style={{ fontSize: "13px", cursor: "pointer", color: "primary" }} onClick={() => saveTabAsTxt(tab.name)} /> */}
-              <SaveMenu handle={(key) => handleOption(tab, key)} />
+              <SaveMenu handle={(key) => handleOption(tab, key)} isCurrentTab={currentTab === index}/>
               {!tab.default && (
                 <CloseOutlinedIcon
                   style={{ fontSize: "13px", cursor: "pointer", color: "red" }}
