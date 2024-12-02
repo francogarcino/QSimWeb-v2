@@ -10,7 +10,7 @@ context('Ejecution Errors', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(['DIV R1, 0x0000']))
 
-    cy.get('[id="execute-button-id"]').click()
+    cy.get('[id="Ejecutar-button-id"]').click()
 
     cy.get('[id="client-snackbar"]').should('have.text', 'No es posible dividir por 0')
   })
@@ -20,7 +20,7 @@ context('Ejecution Errors', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(program))
 
-    cy.get('[id="execute-button-id"]').click()
+    cy.get('[id="Ejecutar-button-id"]').click()
 
     cy.get('[id="client-snackbar"]').should('have.text', 'Hubo un error, es posible que te falte un RET')
   })
@@ -30,7 +30,7 @@ context('Ejecution Errors', () => {
     cy.get('[id="ace-editor"]')
       .type(getProgram(program))
 
-    cy.get('[id="execute-button-id"]').click()
+    cy.get('[id="Ejecutar-button-id"]').click()
 
     cy.get('[id="client-snackbar"]').should('have.text', "Hubo un error, es posible que tengas un RET sin un CALL")
   })

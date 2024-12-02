@@ -23,7 +23,7 @@ describe('Disabled addressing modes', () => {
       cy.get('[id="ace-editor"]')
         .type(getProgram(['MOV R1, 0x0001']))
 
-      cy.get('[id="execute-button-id"]').click()
+      cy.get('[id="Ejecutar-button-id"]').click()
 
       cy.get('[id="client-snackbar"]').should('have.text', 'El modo de direccionamiento Registro esta deshabilitado')
     })
@@ -47,7 +47,7 @@ describe('Disabled addressing modes', () => {
       cy.get('[id="ace-editor"]')
         .type(getProgram(['MOV R1, 0x0001']))
 
-      cy.get('[id="execute-button-id"]').click()
+      cy.get('[id="Ejecutar-button-id"]').click()
 
       cy.get('[id="client-snackbar"]').should('have.text', 'El modo de direccionamiento Inmediato esta deshabilitado')
     })
@@ -71,7 +71,7 @@ describe('Disabled addressing modes', () => {
       cy.get('[id="ace-editor"]')
         .type(getProgram(['MOV R1, [0x0001]']))
 
-      cy.get('[id="execute-button-id"]').click()
+      cy.get('[id="Ejecutar-button-id"]').click()
 
       cy.get('[id="client-snackbar"]').should('have.text', 'El modo de direccionamiento Directo esta deshabilitado')
     })
@@ -95,7 +95,7 @@ describe('Disabled addressing modes', () => {
       cy.get('[id="ace-editor"]')
         .type(getProgram(['MOV R1, [[0x0001]]']))
 
-      cy.get('[id="execute-button-id"]').click()
+      cy.get('[id="Ejecutar-button-id"]').click()
 
       cy.get('[id="client-snackbar"]').should('have.text', 'El modo de direccionamiento Indirecto esta deshabilitado')
     })
@@ -119,7 +119,7 @@ describe('Disabled addressing modes', () => {
       cy.get('[id="ace-editor"]')
         .type(getProgram(['MOV R1, [R3]']))
 
-      cy.get('[id="execute-button-id"]').click()
+      cy.get('[id="Ejecutar-button-id"]').click()
 
       cy.get('[id="client-snackbar"]').should('have.text', 'El modo de direccionamiento Indirecto Registro esta deshabilitado')
     })
@@ -133,7 +133,7 @@ describe('Disabled addressing modes', () => {
       cy.get('[id="ace-editor"]')
         .type(getProgram(['MOV R1, [R3]']))
 
-      cy.get('[id="execute-button-id"]').click()
+      cy.get('[id="Ejecutar-button-id"]').click()
 
       cy.get('[id="client-snackbar"]').should('have.text', 'El modo de direccionamiento Indirecto Registro esta deshabilitado')
     })
@@ -153,9 +153,9 @@ describe('Change registers number', () => {
         cy.get('[id="ace-editor"]')
           .type(getProgram(['MOV R1, 0x8000', 'MUL R1, 0x0002']))
 
-        cy.get('[id="execute-button-id"]').click()
+        cy.get('[id="Ejecutar-button-id"]').click()
 
-        cy.get('[id="results-box-id"]').should('have.value', 'La ejecución fue exitosa')
+        cy.get('[id="results-box-id"]').should('have.value', 'La ejecución del programa fue exitosa')
 
         assertRegisters(['0000', '0000', '0000', '0000', '0000', '0000', '0000', '0001'])
       })

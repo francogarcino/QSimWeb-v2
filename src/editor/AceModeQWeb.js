@@ -66,8 +66,17 @@ export default class CustomSqlMode extends window.ace.acequire("ace/mode/python"
 }
 
 export class CustomCompleter {
-  constructor() {
+  constructor(getTabs) {
     this.routines = []
+    this.getTabs = getTabs;
+  }
+  getCodeFromLibrary() {
+    const tabs = this.getTabs();
+    if (0 < tabs.length) {
+      return tabs[1].code; 
+    }
+    console.error("Invalid session index");
+    return "";
   }
   suggests = [
     {"instruction": "MOV", "description": "copia el valor", "label": false},
@@ -103,7 +112,10 @@ export class CustomCompleter {
     const line = session.getLine(pos.row).trim();
 
     // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
-    const { routines} = parser.parse_code(session.getValue())
+    const { routines: routinesFromSession } = parser.parse_code(session.getValue())
+    const { routines: routinesFromLibrary } = parser.parse_code(this.getCodeFromLibrary())
+
+    const routines = [...routinesFromSession, ...routinesFromLibrary];
 
     const withLabels = this.suggests.filter(s => s.label)
     const labeledMatchs = withLabels.filter(inst => line.includes(inst.instruction) && instrucciones.find(i => i.name === inst.instruction).enabled);
