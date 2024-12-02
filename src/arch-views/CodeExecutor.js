@@ -121,7 +121,8 @@ export default function CodeExecutor() {
   const [aceEditorMarkers, setAceEditorMarkers] = useState([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
-  const [TabsCode, tabs, currentTab, code, getLibrary, setCode] = useTabs();
+  const [TabsCode, tabs, currentTab, code, getLibrary, nameByIndex, setCode] = useTabs();
+  const tabsRef = useRef(tabs);
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
     () => ActionMode.find_modeclass(actionMode),
@@ -146,15 +147,19 @@ export default function CodeExecutor() {
       className: "info-highlight",
     },
   };
-  const completer = new CustomCompleter();
+  const completer = useMemo(() => new CustomCompleter(() => tabsRef.current), []);
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
     console.log(currentTab);
     parse_warnings(getCodeFromCurrent());
     setResult("");
-    setErrors([]);
+    qweb_restart()
   }, [code]);
+
+  useEffect(() => {
+    tabsRef.current = tabs;
+  }, [tabs]);
 
   function load_program(routines) {
     computer.load_many(routines);
@@ -170,18 +175,35 @@ export default function CodeExecutor() {
     } catch (error) { console.log("Can't read code from unexistent tab") }
   }
 
+  function errorsDetectedByFlag(something) {
+    return typeof something === 'boolean'
+  }
+
   function parse_and_load_program() {
+    if (currentTab == 1) {
+      throw new Error("La biblioteca no puede ejecutarse como principal");
+    }
     parser.validate_empty_code(code)
     parser.validate_commons_code(getLibrary)
 
-      // TODO: pasar los bloques a parsear como lista para fixear bug
-      let code_with_libraries = getCodeFromCurrent().concat("\n" + getLibrary)
-    
-    let parsed_code = parse_code(code_with_libraries);
-    console.log(parsed_code);
-    parser.validate_duplicated(parsed_code)
-    let routines = translator.translate_code(parsed_code);
-    load_program(routines);
+    let programs = []
+    let current_parsed = parse_code(getCodeFromCurrent(), currentTab)
+    if (!errorsDetectedByFlag(current_parsed)) {
+      programs = programs.concat(current_parsed)
+    }
+
+    let lib_parsed = parse_code(getLibrary, 1)
+    if (!errorsDetectedByFlag(lib_parsed)) {
+      programs = programs.concat(lib_parsed.slice(1))
+    }
+
+    parser.validate_duplicated(programs)
+    let routines = translator.translate_code(programs);
+
+    return {
+      detected: (errorsDetectedByFlag(lib_parsed) || errorsDetectedByFlag(current_parsed)),
+      rts: routines
+    }
   }
 
   function execution_on_error(e) {
@@ -196,7 +218,7 @@ export default function CodeExecutor() {
     if (knownErrors.some((error) => e instanceof error))
       addAction(e.message, alertConfig);
     else
-      addAction("Hubo un error, es posible que sea de sintaxis", alertConfig);
+      addAction(e.message, alertConfig);
   }
 
   function qweb_restart() {
@@ -215,12 +237,18 @@ export default function CodeExecutor() {
   }
 
   function execute() {
+    let result;
+    setErrors([])
     try {
       if (currentExecutionMode !== EXECUTION_MODE_NORMAL) {
         qweb_restart();
         setCurrentExecutionMode(EXECUTION_MODE_NORMAL);
       }
-      parse_and_load_program();
+      result = parse_and_load_program();
+      if (result.detected) {
+        throw new Error("Se encontraron errores durante la ejecución.");
+      }
+      load_program(result.rts)
       var executionActions = computer.execute();
       display_results(false);
       qweb_restart();
@@ -232,13 +260,11 @@ export default function CodeExecutor() {
     }
   }
 
-  function parse_code(codeToParse) {
+  function parse_code(codeToParse, tabIndex) {
     try {
-      setAceEditorAnnotations([]);
-      setAceEditorMarkers([]);
       const { routines, errors, recursives } = parser.parse_code(codeToParse);
-      addNotifications(errors, "error");
-
+      errors.map(e => e.error.tab = nameByIndex(tabIndex))
+      addNotifications(errors, "error", false);
       mark_recursives(recursives);
 
       const hasErrors = errors.some((e) => e && e.error);
@@ -246,7 +272,8 @@ export default function CodeExecutor() {
       if (!hasErrors) {
         return routines;
       } else {
-        setErrors(errors);
+        setErrors(prev => prev.concat(errors));
+        return false
       }
     } catch (e) {
       //addError(e)
@@ -299,11 +326,11 @@ export default function CodeExecutor() {
     setAceEditorAnnotations([]);
     setAceEditorMarkers([]);
     const { errors, recursives } = parser.parse_code(codeToParse);
-    addNotifications(errors, "warning");
+    addNotifications(errors, "warning", true);
     mark_recursives(recursives);
   }
 
-  function addNotifications(errors, type) {
+  function addNotifications(errors, type, must_show) {
     const session = aceEditorRef.current.editor.getSession();
     const typeOfMarker = markerType[type];
     const { result } = errors.reduce(
@@ -312,7 +339,7 @@ export default function CodeExecutor() {
 
         const newResult = `${result}\n${e.error.message}`;
 
-        addNotification(e, session, typeOfMarker);
+        addNotification(e, session, typeOfMarker, must_show);
 
         return {
           result: newResult,
@@ -323,35 +350,38 @@ export default function CodeExecutor() {
     );
     setResult(result);
   }
-  const addNotification = (e, session, typeOfMarker) => {
+  const addNotification = (e, session, typeOfMarker, must_show) => {
     const { type, className } = typeOfMarker;
-    setAceEditorAnnotations((prevErrors) => [
-      ...prevErrors,
-      {
-        row: e.error.line,
-        column: Math.random(),
-        type: type,
-        text: e.error.shorterMessage,
-      },
-    ]);
-
-    setAceEditorMarkers((prevMarkers) => {
-      const lineLength = session.getLine(e.error.line).length;
-      return [
-        ...prevMarkers,
+    if (must_show || e.error.tab === nameByIndex(currentTab)) {
+      setAceEditorAnnotations((prevErrors) => [
+        ...prevErrors,
         {
-          startRow: e.error.line,
-          startCol: e.error.index,
-          endRow: e.error.line,
-          endCol: lineLength,
-          className: className,
-          type: "text",
-          inFront: true,
+          row: e.error.line,
+          column: Math.random(),
+          type: type,
+          text: e.error.shorterMessage,
         },
-      ];
-    });
+      ]);
+
+      setAceEditorMarkers((prevMarkers) => {
+        const lineLength = session.getLine(e.error.line).length;
+        return [
+          ...prevMarkers,
+          {
+            startRow: e.error.line,
+            startCol: e.error.index,
+            endRow: e.error.line,
+            endCol: lineLength,
+            className: className,
+            type: "text",
+            inFront: true,
+          },
+        ];
+      });
+    }
   };
   function execute_cycle() {
+    setErrors([])
     try {
       switchDetailedMode(EXECUTION_MODE_ONE_INSTRUCTION);
       computer.execute_cycle();
@@ -362,6 +392,7 @@ export default function CodeExecutor() {
   }
 
   function execute_cycle_detailed() {
+    setErrors([])
     try {
       switchDetailedMode(EXECUTION_MODE_DETAILED);
       if (programFinished && programLoaded) {
@@ -389,7 +420,11 @@ export default function CodeExecutor() {
       setCurrentExecutionMode(execution_mode);
       if (!programLoaded) {
         qweb_restart();
-        parse_and_load_program();
+        let result = parse_and_load_program();
+        if (result.detected) {
+          throw new Error("Se encontraron errores durante la ejecución.");
+        }
+        load_program(result.rts)
       }
       setProgramLoaded(true);
     }
@@ -505,7 +540,7 @@ export default function CodeExecutor() {
   };
 
   function validateCode() {
-    parse_code(getCodeFromCurrent());
+    parse_code(getCodeFromCurrent(), currentTab);
   }
   function goToLine(index) {
     aceEditorRef.current.editor.gotoLine(index+1);

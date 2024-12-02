@@ -14,6 +14,9 @@ export default function ErrorTable({ errors, onClick }) {
           <th style={{ textAlign: "center", padding: "10px", borderBottom: "1px solid #ccc" }}>
             Detalle
           </th>
+          <th style={{ textAlign: "center", padding: "10px", borderBottom: "1px solid #ccc" }}>
+            Pestaña
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -32,6 +35,9 @@ export default function ErrorTable({ errors, onClick }) {
                 <button onClick={() => onClick(error.error.line)} style={{ cursor: "pointer" }}>
                   Ir a línea
                 </button>
+              </td>
+              <td style={{ textAlign: "center", padding: "10px", verticalAlign: "top" }}>
+                {error.error.tab}
               </td>
             </tr>
           </React.Fragment>
