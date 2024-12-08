@@ -121,7 +121,7 @@ export default function CodeExecutor() {
   const [aceEditorMarkers, setAceEditorMarkers] = useState([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const classes = useStyles();
-  const [TabsCode, tabs, currentTab, code, getLibrary, nameByIndex, setCode] = useTabs();
+  const [TabsCode, tabs, currentTab, code, getLibrary, nameByIndex, setCode, setCurrentTab] = useTabs();
   const tabsRef = useRef(tabs);
   const actionMode = qConfig.getItem("actions_mode");
   const CurrentActionMode = useMemo(
@@ -263,7 +263,10 @@ export default function CodeExecutor() {
   function parse_code(codeToParse, tabIndex) {
     try {
       const { routines, errors, recursives } = parser.parse_code(codeToParse);
-      errors.map(e => e.error.tab = nameByIndex(tabIndex))
+      errors.map(e => {
+        e.error.tab = nameByIndex(tabIndex)
+        e.error.tab_index = tabIndex
+      })
       addNotifications(errors, "error", false);
       mark_recursives(recursives);
 
@@ -659,7 +662,7 @@ export default function CodeExecutor() {
             </Grid>
             {errors.length > 0 ? (
               <Grid item xs={12} md={6}>
-                <ErrorTable errors={errors} onClick={goToLine}/>{" "}
+                <ErrorTable errors={errors} toLine={goToLine} toTab={setCurrentTab} current={currentTab}/>{" "}
               </Grid>
             ) : result ? (
               <Grid container spacing={1}>

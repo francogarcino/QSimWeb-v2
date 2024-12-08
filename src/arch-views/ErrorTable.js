@@ -1,6 +1,7 @@
 import React from "react";
 
-export default function ErrorTable({ errors, onClick }) {
+export default function ErrorTable({ errors, toLine, toTab, current }) {
+  console.log(errors);
   return (
     <table style={{ width: "100%", borderCollapse: "collapse" }}>
       <thead>
@@ -32,12 +33,14 @@ export default function ErrorTable({ errors, onClick }) {
                 {error.error.line+1}
               </td>
               <td style={{ textAlign: "center", padding: "10px", verticalAlign: "top" }}>
-                <button onClick={() => onClick(error.error.line)} style={{ cursor: "pointer" }}>
+                <button onClick={() => toLine(error.error.line)} style={{ cursor: "pointer" }} disabled={current !== error.error.tab_index}>
                   Ir a línea
                 </button>
               </td>
               <td style={{ textAlign: "center", padding: "10px", verticalAlign: "top" }}>
-                {error.error.tab}
+                <button onClick={() => toTab(error.error.tab_index)} style={{ cursor: "pointer" }}>
+                  Ir a {error.error.tab}
+                </button>
               </td>
             </tr>
           </React.Fragment>

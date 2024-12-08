@@ -111,6 +111,7 @@ export function useTabs() {
     getLibrary,
     nameByIndex,
     setCode,
+    setCurrentTab
   ];
 }
 
