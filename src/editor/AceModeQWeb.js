@@ -116,7 +116,13 @@ export class CustomCompleter {
     const { routines: routinesFromSession } = parser.parse_code(session.getValue(), this.currentDoc)
     const { routines: routinesFromLibrary } = parser.parse_code(this.getCodeFromLibrary(), 1)
 
-    const routines = [...routinesFromSession, ...routinesFromLibrary.slice(1)];
+    let routines;
+    if (this.currentDoc === 1) {
+      routines = [...routinesFromLibrary.slice(1)];
+    } else {
+      routines = [...routinesFromSession, ...routinesFromLibrary.slice(1)];
+    }
+    //routines = [...routinesFromSession, ...routinesFromLibrary.slice(1)];
 
     const withLabels = this.suggests.filter(s => s.label)
     const labeledMatchs = withLabels.filter(inst => line.includes(inst.instruction) && instrucciones.find(i => i.name === inst.instruction).enabled);
@@ -152,6 +158,7 @@ export class CustomCompleter {
   }
 
   suggestions_for_labeled(line, callback, routines, pos) {
+    console.log('rs:', routines);
     // TODO, deberia contemplar el caso 'label: CALL label'
     if (line.includes("CALL")) {
       callback(null, routines.map(r => {
