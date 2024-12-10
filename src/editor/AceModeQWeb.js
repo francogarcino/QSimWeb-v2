@@ -69,6 +69,7 @@ export class CustomCompleter {
   constructor(getTabs) {
     this.routines = []
     this.getTabs = getTabs;
+    this.currentDoc = 0
   }
   getCodeFromLibrary() {
     const tabs = this.getTabs();
@@ -112,16 +113,23 @@ export class CustomCompleter {
     const line = session.getLine(pos.row).trim();
 
     // por alguna razon, si se intenta setear desde el CodeExecutor, no se actualizan correctamente
-    const { routines: routinesFromSession } = parser.parse_code(session.getValue())
-    const { routines: routinesFromLibrary } = parser.parse_code(this.getCodeFromLibrary())
+    const { routines: routinesFromSession } = parser.parse_code(session.getValue(), this.currentDoc)
+    const { routines: routinesFromLibrary } = parser.parse_code(this.getCodeFromLibrary(), 1)
 
-    const routines = [...routinesFromSession, ...routinesFromLibrary];
+    let routines;
+    if (this.currentDoc === 1) {
+      routines = [...routinesFromLibrary.slice(1)];
+    } else {
+      routines = [...routinesFromSession, ...routinesFromLibrary.slice(1)];
+    }
+    //routines = [...routinesFromSession, ...routinesFromLibrary.slice(1)];
 
     const withLabels = this.suggests.filter(s => s.label)
     const labeledMatchs = withLabels.filter(inst => line.includes(inst.instruction) && instrucciones.find(i => i.name === inst.instruction).enabled);
 
     // recomendación de etiquetas
     if (labeledMatchs.length > 0) {
+      console.log('fijate aca', routines);
       this.suggestions_for_labeled(line, callback, routines, pos);
       return;
     }
@@ -150,6 +158,7 @@ export class CustomCompleter {
   }
 
   suggestions_for_labeled(line, callback, routines, pos) {
+    console.log('rs:', routines);
     // TODO, deberia contemplar el caso 'label: CALL label'
     if (line.includes("CALL")) {
       callback(null, routines.map(r => {
@@ -158,8 +167,10 @@ export class CustomCompleter {
         }
       }));
     } else {
-      let prevs = routines.filter(r => r.start_line < pos.row + 1)
+      let prevs = routines.filter(r => (r.start_line < pos.row + 1) && this.currentDoc === r.doc_id)
+      console.log('p:', prevs);
       const current = routines[Math.max(0, prevs.length - 1)]
+      console.log('c:', current);
       if (current.labels.length > 0) {
         callback(null, current.labels.map(l => {
           return {

@@ -151,7 +151,7 @@ export default function CodeExecutor() {
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
-    console.log(currentTab);
+    completer.currentDoc = currentTab
     parse_warnings(getCodeFromCurrent());
     setResult("");
     qweb_restart()
@@ -262,7 +262,7 @@ export default function CodeExecutor() {
 
   function parse_code(codeToParse, tabIndex) {
     try {
-      const { routines, errors, recursives } = parser.parse_code(codeToParse);
+      const { routines, errors, recursives } = parser.parse_code(codeToParse, tabIndex);
       errors.map(e => {
         e.error.tab = nameByIndex(tabIndex)
         e.error.tab_index = tabIndex
