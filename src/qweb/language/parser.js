@@ -32,7 +32,7 @@ class Parser {
         }
     }
 
-    parse_code(codeToParse) {    
+    parse_code(codeToParse, docId) {    
         let assembly_cell = '0000'
         let code_lines = codeToParse.split(/\r\n|\r|\n/)
         let first_with_code = code_lines.find(line => !line.startsWith("#") && line.trim() !== "")
@@ -59,7 +59,7 @@ class Parser {
                     let recursive_declaration = (line.split(" ").filter(string => string.includes(currentRoutine)).length > 1) && currentRoutine.trim() !== "";
                     this.detect_recursion(recursive_body, recursive_declaration, recursives, currentRoutine, index);
     
-                    const __ret = this.update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index);
+                    const __ret = this.update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index, docId);
                     shouldUpdateRoutine = __ret.shouldUpdateRoutine;
                     currentRoutine = __ret.currentRoutine;
                     routines[routines.length - 1].add_instruction(parsed_instruction);
@@ -120,7 +120,7 @@ class Parser {
         return regex.test(code)
     }
 
-    update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index) {
+    update_metadata(shouldUpdateRoutine, line, currentRoutine, routines, index, docId) {
         if (shouldUpdateRoutine) {
             shouldUpdateRoutine = false
             if (line.includes(":")) {
@@ -128,6 +128,7 @@ class Parser {
             }
             routines[routines.length - 1].setName(currentRoutine)
             routines[routines.length - 1].setEditorLine(index + 1)
+            routines[routines.length - 1].setDocId(docId)
         } else {
             if (line.includes(":")) {
                 routines[routines.length - 1].labels.push(line.split(":")[0])

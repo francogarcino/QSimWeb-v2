@@ -5,6 +5,7 @@ export class Routine {
     this.name = ""
     this.labels = []
     this.start_line = 0
+    this.doc_id = 0
   }
 
   add_instruction(instruction){
@@ -17,5 +18,9 @@ export class Routine {
 
   setEditorLine(index) {
     this.start_line = index
+  }
+
+  setDocId(id) {
+    this.doc_id = id
   }
 }
