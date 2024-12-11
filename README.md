@@ -37,6 +37,9 @@ El proyecto original fue desarrollado por Pablo Pissi y Francisco Perez Ramos a 
 
 [Archivo de refactor](/docs/2024s2/Refactor%20-%20QsimWebv2.docx)
 
+## Video de la Demo
+[Demo del simulador](https://drive.google.com/file/d/12MfAEbUoAR1lv9kS361h4WYJTvUvaDRp/view?usp=sharing)
+
 ## 👤 Integrantes
 
 Agustin Lascar, Franco Garcino Ruiz
