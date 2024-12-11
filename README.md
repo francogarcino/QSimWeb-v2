@@ -13,7 +13,7 @@ Una mejora del simulador para el lenguaje simil a Assembly de bajo nivel **Q**, 
 
 El proyecto original fue desarrollado por Pablo Pissi y Francisco Perez Ramos a principios de 2021
 
-## Versión actual publica para el testing de los cambios implementados
+## Despligue con los cambios
 🔗 [En este enlace](https://qsimweb-v2.vercel.app)
 
 
@@ -22,11 +22,20 @@ El proyecto original fue desarrollado por Pablo Pissi y Francisco Perez Ramos a 
 
 🗣️ El feedback recibido ante errores en el código
 
+📂 El funcionamiento de las pestañas del simulador
+
 🖥️ Representación de la Arquitectura de Q
 
 ## ¿Y que novedades?
 
 🔍 Sugerencias de instrucciones al escribir programas
+
+## 📖 Documentación
+[Presentación: Prueba de concepto](/docs/2024s2/QSimWebv2%20-%20POC.pptx.pdf)
+
+[Presentación: Demo final](/docs/2024s2/QSimWebv2%20-%20PFinal.pptx.pdf)
+
+[Archivo de refactor](/docs/2024s2/Refactor%20-%20QsimWebv2.docx)
 
 ## 👤 Integrantes
 
